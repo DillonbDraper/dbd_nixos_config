@@ -47,10 +47,13 @@
 
     # torrent
     qbittorrent
+
+    # gaming
+    runelite
   ];
 
   programs.zen-browser.enable = true;
-    programs.zen-browser.policies = {
+  programs.zen-browser.policies = {
       AutofillAddressEnabled = true;
       AutofillCreditCardEnabled = false;
       DisableAppUpdate = true;
