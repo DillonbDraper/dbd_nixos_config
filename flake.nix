@@ -8,6 +8,10 @@
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    slippi = {
+      url = "github:lytedev/slippi-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager/master";
       # The `follows` keyword in inputs is used for inheritance.
@@ -18,7 +22,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi,... }: {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       modules = [
         # Import the previous configuration.nix we used,
