@@ -3,6 +3,7 @@
 {
   imports = [
     inputs.zen-browser.homeModules.twilight
+    inputs.slippi.homeManagerModules.slippi-launcher
   ];
   home.username = "dillon";
   home.homeDirectory = "/home/dillon";
@@ -43,6 +44,9 @@
     strace # system call monitoring
     ltrace # library call monitoring
     lsof # list open files
+
+    # torrent
+    qbittorrent
   ];
 
   programs.zen-browser.enable = true;
@@ -303,6 +307,12 @@
         crust = "#11111b";
       };
     };
+  };
+
+  slippi-launcher = {
+    enable = true;
+    isoPath = "/home/dillon/dolphin_games/'SSBM 1.02.iso'";
+    launchMeleeOnPlay = false;
   };
 
 
