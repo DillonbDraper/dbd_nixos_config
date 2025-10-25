@@ -75,6 +75,10 @@
     settings = {
       user.email = "dillonbdraper@gmail.com";
       user.name = "Dillon Draper";
+      extraConfig = {
+        pull.rebase = true;
+        core.editor = "zeditor --wait";
+      };
     };
   };
 
