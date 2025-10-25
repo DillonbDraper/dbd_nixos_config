@@ -1,6 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
+  imports = [
+    inputs.zen-browser.homeModules.twilight
+  ];
   home.username = "dillon";
   home.homeDirectory = "/home/dillon";
 
@@ -25,7 +28,6 @@
     which
 
     # nix related
-    #
     # it provides the command `nom` works just like `nix`
     # with more details log output
     nix-output-monitor
@@ -42,6 +44,26 @@
     ltrace # library call monitoring
     lsof # list open files
   ];
+
+  programs.zen-browser.enable = true;
+    programs.zen-browser.policies = {
+      AutofillAddressEnabled = true;
+      AutofillCreditCardEnabled = false;
+      DisableAppUpdate = true;
+      DisableFeedbackCommands = true;
+      DisableFirefoxStudies = true;
+      DisablePocket = true;
+      DisableTelemetry = true;
+      DontCheckDefaultBrowser = true;
+      NoDefaultBookmarks = true;
+      OfferToSaveLogins = false;
+      EnableTrackingProtection = {
+        Value = true;
+        Locked = true;
+        Cryptomining = true;
+        Fingerprinting = true;
+      };
+    };
 
   # basic configuration of git
   programs.git = {
@@ -61,7 +83,6 @@
       enable = true;
       plugins = [
         "git"
-        "mise"
         "starship"
       ];
     };

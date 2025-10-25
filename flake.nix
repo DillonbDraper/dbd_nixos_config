@@ -4,6 +4,10 @@
   inputs = {
     # NixOS official package source, using the nixos-unstable branch
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager/master";
       # The `follows` keyword in inputs is used for inheritance.
@@ -14,7 +18,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, ... }: {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       modules = [
         # Import the previous configuration.nix we used,
@@ -26,6 +30,7 @@
           home-manager.useUserPackages = true;
 
           home-manager.users.dillon = import ./home.nix;
+          home-manager.extraSpecialArgs = { inherit inputs; };
         }
       ];
     };
