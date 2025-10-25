@@ -39,6 +39,7 @@
 
     btop  # replacement of htop/nmon
     iftop # network monitoring
+    lshw # hardware information
 
     # system call monitoring
     strace # system call monitoring
@@ -50,6 +51,7 @@
 
     # gaming
     runelite
+    lutris
   ];
 
   programs.zen-browser.enable = true;
