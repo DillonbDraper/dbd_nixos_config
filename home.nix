@@ -93,6 +93,12 @@
     shellAliases = {
       ll = "ls -l";
       update = "sudo nixos-rebuild switch";
+      ga = "git add --all";
+      gs = "git status";
+      gcm = "git commit -m";
+      gpo = "git push origin";
+      glo = "git pull origin";
+      gb = "git checkout -b";
     };
 
     history.size = 10000;
@@ -311,7 +317,7 @@
 
   slippi-launcher = {
     enable = true;
-    isoPath = "/home/dillon/dolphin_games/'SSBM 1.02.iso'";
+    isoPath = "/home/dillon/dolphin_games/ssbm.iso";
     launchMeleeOnPlay = false;
   };
 
