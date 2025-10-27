@@ -54,6 +54,11 @@
     lutris
   ];
 
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    };
+
   programs.zen-browser.enable = true;
   programs.zen-browser.policies = {
       AutofillAddressEnabled = true;
