@@ -12,7 +12,6 @@
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     neofetch
-    mise
 
     # archives
     zip
@@ -52,6 +51,9 @@
     # gaming
     runelite
     lutris
+
+    # db introspection
+    jetbrains.datagrip
   ];
 
   programs.direnv = {
