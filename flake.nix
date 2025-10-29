@@ -23,6 +23,11 @@
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi,... }: {
+    # Custom packages overlay
+    overlays.default = final: prev: {
+      input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
+    };
+
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       modules = [
         # Import the previous configuration.nix we used,
@@ -36,6 +41,10 @@
           home-manager.users.dillon = import ./home.nix;
           home-manager.extraSpecialArgs = { inherit inputs; };
         }
+        # Apply custom overlay
+        ({ config, pkgs, ... }: {
+          nixpkgs.overlays = [ self.overlays.default ];
+        })
       ];
     };
   };

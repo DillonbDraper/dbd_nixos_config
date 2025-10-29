@@ -51,6 +51,7 @@
     # gaming
     runelite
     lutris
+    input-integrity-lossless
 
     # db introspection
     jetbrains.datagrip
@@ -84,6 +85,7 @@
   # basic configuration of git
   programs.git = {
     enable = true;
+    ignores = [ ".envrc" ".direnv"];
     settings = {
       user.email = "dillonbdraper@gmail.com";
       user.name = "Dillon Draper";
