@@ -35,6 +35,23 @@
     variant = "";
   };
 
+  services.udev.packages = [
+    (pkgs.writeTextFile {
+      name = "gcadapter-udev-rules";
+      destination = "/etc/udev/rules.d/51-gcadapter.rules";
+      text = ''
+        SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="0337", MODE="0666"
+      '';
+    })
+    (pkgs.writeTextFile {
+      name = "losslessadapter-udev-rules";
+      destination = "/etc/udev/rules.d/51-losslessadapter.rules";
+      text = ''
+        SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="102b", MODE="0666"
+      '';
+    })
+  ];
+
   services.printing.enable = true;
 
   services.pulseaudio.enable = false;
