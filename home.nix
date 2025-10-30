@@ -35,6 +35,7 @@
     # productivity
     hugo # static site generator
     glow # markdown previewer in terminal
+    zoom-us # video conferencing
 
     btop  # replacement of htop/nmon
     iftop # network monitoring
@@ -48,6 +49,10 @@
     # torrent
     qbittorrent
 
+    # vpn/work suite
+    tailscale
+    mattermost-desktop
+
     # gaming
     runelite
     lutris
@@ -56,6 +61,8 @@
     # db introspection
     jetbrains.datagrip
   ];
+
+  services.tailscale-systray.enable = true;
 
   programs.direnv = {
     enable = true;

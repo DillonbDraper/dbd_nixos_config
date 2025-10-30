@@ -16,7 +16,7 @@
 
 stdenv.mkDerivation rec {
   pname = "input-integrity-manager";
-  version = "2.0";
+  version = "2.35";
 
   src = fetchurl {
     url = "https://dnlo0r667tlsj.cloudfront.net/LosslessAdapterManager2_Linux.gz";
@@ -67,6 +67,7 @@ stdenv.mkDerivation rec {
     cp LosslessAdapterManager2_Linux $out/bin/.input-integrity-manager-unwrapped
 
     # Wrap the binary to set library paths for .NET runtime and Avalonia UI
+    # No idea if all the xorg stuff after libX11 strictly needs to be in this line
     makeWrapper $out/bin/.input-integrity-manager-unwrapped $out/bin/input-integrity-manager \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ icu fontconfig xorg.libX11 xorg.libXcursor xorg.libXrandr xorg.libXi xorg.libSM xorg.libICE libGL libglvnd libusb1 openssl ]}"
 
@@ -74,7 +75,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with lib; {
-    description = "Input Integrity Manager - Software to manage GameCube controller adapters";
+    description = "Input Integrity Manager - Software to the lossless GameCube controller adapter";
     homepage = "https://www.input-integrity.com/";
     license = licenses.unfree;
     platforms = [ "x86_64-linux" ];
