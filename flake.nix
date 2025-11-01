@@ -20,19 +20,35 @@
       # to avoid problems caused by different versions of nixpkgs.
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    niri = {
+      url = "github:sodiboo/niri-flake";
+    };
+
+    quickshell = {
+      url = "github:outfoxxed/quickshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    noctalia = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.quickshell.follows = "quickshell";  # Use same quickshell version
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi,... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi, niri,... }: {
     # Custom packages overlay
     overlays.default = final: prev: {
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
     };
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+      specialArgs = { inherit inputs; };  # Pass inputs to all NixOS modules
       modules = [
         # Import the previous configuration.nix we used,
         # so the old configuration file still takes effect
         ./configuration.nix
+        ./noctalia.nix
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;

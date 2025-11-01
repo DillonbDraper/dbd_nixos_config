@@ -77,6 +77,7 @@
   home-manager.backupFileExtension = "backup";
 
   programs.firefox.enable = true;
+  programs.niri.enable = true;
   programs.zsh.enable = true;
   programs.steam.enable = true;
   programs.steam.extraCompatPackages = [ pkgs.proton-ge-bin];
@@ -124,6 +125,7 @@ hardware.nvidia.prime = {
   environment.systemPackages = with pkgs; [
     git
     zed-editor
+    code-cursor-fhs
     zsh
     wezterm
     discord
