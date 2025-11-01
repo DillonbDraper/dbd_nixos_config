@@ -53,6 +53,8 @@
     tailscale
     mattermost-desktop
 
+    alacritty
+
     # gaming
     runelite
     lutris
