@@ -102,12 +102,13 @@
     enable = true;
     ignores = [ ".envrc" ".direnv"];
     settings = {
-      user.email = "dillonbdraper@gmail.com";
-      user.name = "Dillon Draper";
-      extraConfig = {
-        pull.rebase = true;
-        core.editor = "zeditor --wait";
+      user = {
+        name = "Dillon Draper";
+        email = "dillonbdraper@gmail.com";
       };
+      pull.rebase = true;
+      core.editor = "zeditor --wait";
+      init.defaultBranch = "main";
     };
   };
 
