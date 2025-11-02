@@ -57,7 +57,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
 
-            home-manager.users.dillon = import ./home.nix;
+            home-manager.users.dillon = import ./hosts/roy/home.nix;
             home-manager.extraSpecialArgs = { inherit inputs; };
           }
           # Apply custom overlay
@@ -81,7 +81,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
 
-            home-manager.users.dillon = import ./home.nix;
+            home-manager.users.dillon = import ./hosts/marth/home.nix;
             home-manager.extraSpecialArgs = { inherit inputs; };
           }
           # Apply custom overlay
