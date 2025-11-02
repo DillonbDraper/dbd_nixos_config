@@ -78,7 +78,7 @@
   programs.zsh.enable = true;
   programs.steam.enable = true;
   programs.steam.extraCompatPackages = [ pkgs.proton-ge-bin];
-  programs.fuse.enable = true;
+  programs.fuse.userAllowOther = true;
 
   # Sets up service for periodic garbage collection
   nix.gc = {
