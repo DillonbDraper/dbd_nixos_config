@@ -130,6 +130,9 @@
       gpo = "git push origin";
       glo = "git pull origin";
       gb = "git checkout -b";
+      # cursor and slippi-launcher are used to open the code editor and slippi launcher in a way that is compatible with Wayland
+      cursor="cursor --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations";
+      slippi-launcher="slippi-launcher --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations";
     };
 
     history.size = 10000;
