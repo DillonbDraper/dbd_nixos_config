@@ -2,6 +2,7 @@
 
 {
   programs.niri.settings.environment."NIXOS_OZONE_WL" = "1";
+  programs.niri.settings.environment."FUSERMOUNT_PROG" = "/run/wrappers/bin/fusermount3";
 
   programs.niri.settings.spawn-at-startup = [
     {
