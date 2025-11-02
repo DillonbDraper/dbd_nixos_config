@@ -14,6 +14,7 @@
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
+    inputs.niri.packages.${pkgs.system}.xwayland-satellite-unstable
     fastfetch
 
     # archives
