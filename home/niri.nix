@@ -1,13 +1,12 @@
 { config, pkgs, ... }:
 
 {
+  # Electron apps need to be run in a Wayland session
   programs.niri.settings.environment."NIXOS_OZONE_WL" = "1";
+  # Dolphin related to fuse mounting
   programs.niri.settings.environment."FUSERMOUNT_PROG" = "/run/wrappers/bin/fusermount3";
   programs.niri.settings.environment."APPIMAGE_EXTRACT_AND_RUN" = "1";
-  programs.niri.settings.environment."GDK_BACKEND" = "wayland,x11";
-  programs.niri.settings.environment."QT_QPA_PLATFORM" = "wayland:xcb";
-  programs.niri.settings.environment."SDL_VIDEODRIVER" = "wayland";
-  programs.niri.settings.environment."CLUTTER_BACKEND" = "wayland";
+
 
   programs.niri.settings.spawn-at-startup = [
     {
