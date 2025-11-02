@@ -1,15 +1,12 @@
 { config, pkgs, ... }:
 
 {
-  imports = [
-    ./hardware-configuration.nix
-  ];
-
- boot.loader.systemd-boot.enable = true;
+  # Note: hardware-configuration.nix and networking.hostName are now set in host-specific configs
+  
+  boot.loader.systemd-boot.enable = true;
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "nixos";
   networking.networkmanager.enable = true;
 
   time.timeZone = "America/Chicago";
@@ -74,13 +71,20 @@
     ];
   };
 
-  home-manager.backupFileExtension = "backup";
+  home-manager.backupFileExtension = "bak";
 
   programs.firefox.enable = true;
   programs.niri.enable = true;
   programs.zsh.enable = true;
   programs.steam.enable = true;
   programs.steam.extraCompatPackages = [ pkgs.proton-ge-bin];
+
+  # Sets up service for periodic garbage collection
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
 
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -129,6 +133,7 @@ hardware.nvidia.prime = {
     zsh
     wezterm
     discord
+    libdisplay-info
   ];
 
   fonts.packages = with pkgs; [

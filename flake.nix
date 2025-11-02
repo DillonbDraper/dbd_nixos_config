@@ -42,26 +42,54 @@
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
     };
 
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      specialArgs = { inherit inputs; };  # Pass inputs to all NixOS modules
-      modules = [
-        # Import the previous configuration.nix we used,
-        # so the old configuration file still takes effect
-        ./configuration.nix
-        ./noctalia.nix
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
+    nixosConfigurations = {
+      # Roy configuration
+      roy = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };  # Pass inputs to all NixOS modules
+        modules = [
+          # Import the shared configuration
+          ./configuration.nix
+          # Import the host-specific configuration
+          ./hosts/roy/configuration.nix
+          ./noctalia.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
 
-          home-manager.users.dillon = import ./home.nix;
-          home-manager.extraSpecialArgs = { inherit inputs; };
-        }
-        # Apply custom overlay
-        ({ config, pkgs, ... }: {
-          nixpkgs.overlays = [ self.overlays.default ];
-        })
-      ];
+            home-manager.users.dillon = import ./home.nix;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+          }
+          # Apply custom overlay
+          ({ config, pkgs, ... }: {
+            nixpkgs.overlays = [ self.overlays.default ];
+          })
+        ];
+      };
+
+      # Marth configuration
+      marth = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };  # Pass inputs to all NixOS modules
+        modules = [
+          # Import the shared configuration
+          ./configuration.nix
+          # Import the host-specific configuration
+          ./hosts/marth/configuration.nix
+          ./noctalia.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+
+            home-manager.users.dillon = import ./home.nix;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+          }
+          # Apply custom overlay
+          ({ config, pkgs, ... }: {
+            nixpkgs.overlays = [ self.overlays.default ];
+          })
+        ];
+      };
     };
   };
 }
