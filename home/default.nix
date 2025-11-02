@@ -14,7 +14,7 @@
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
-    neofetch
+    fastfetch
 
     # archives
     zip
@@ -144,7 +144,7 @@
     extraConfig = ''
       local config = {}
 
-      config.color_scheme = 'Tokyo Night'
+      config.color_scheme = 'Eldritch'
       config.font = wezterm.font 'JetBrains Mono'
 
        return config
