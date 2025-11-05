@@ -36,7 +36,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi, niri,... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi, ... }: {
     # Custom packages overlay
     overlays.default = final: prev: {
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };

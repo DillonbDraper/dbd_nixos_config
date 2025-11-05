@@ -12,6 +12,38 @@
   home.username = "dillon";
   home.homeDirectory = "/home/dillon";
 
+  # ALSA configuration for PipeWire
+  home.file.".asoundrc".text = ''
+    pcm.!default {
+      type pulse
+      fallback "sysdefault"
+      hint {
+        show on
+        description "Default ALSA Output (via PulseAudio/PipeWire)"
+      }
+    }
+    ctl.!default {
+      type pulse
+      fallback "sysdefault"
+    }
+  '';
+
+  # WirePlumber configuration to set default audio device
+  xdg.configFile."wireplumber/main.lua.d/51-default-device.lua".text = ''
+    rule = {
+      matches = {
+        {
+          { "node.name", "equals", "alsa_output.pci-0000_00_1f.3.analog-stereo" },
+        },
+      },
+      apply_properties = {
+        ["node.priority"] = 1000,
+      },
+    }
+
+    table.insert(alsa_monitor.rules, rule)
+  '';
+
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     inputs.niri.packages.${pkgs.system}.xwayland-satellite-unstable
@@ -30,6 +62,7 @@
     # misc
     file
     which
+    gemini-cli
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -43,7 +76,9 @@
 
     btop  # replacement of htop/nmon
     iftop # network monitoring
+    usbutils # list connected USB devices
     lshw # hardware information
+    wlr-randr # display information
 
     # system call monitoring
     strace # system call monitoring
@@ -57,17 +92,24 @@
     tailscale
     mattermost-desktop
 
-    # Niri defaults
+    # Terminal emulators
     alacritty
+    rio
+    kitty
+    ghostty
+
+    # Launcher
     fuzzel
 
     # gaming
     runelite
     lutris
+    gamescope
     input-integrity-lossless
 
     # db introspection
     jetbrains.datagrip
+    dbeaver-bin
   ];
 
   services.tailscale-systray.enable = true;
@@ -75,6 +117,8 @@
   programs.direnv = {
     enable = true;
     enableZshIntegration = true;
+    nix-direnv.enable = true;
+    silent = true;
   };
 
   programs.zen-browser.enable = true;
@@ -146,8 +190,28 @@
     extraConfig = ''
       local config = {}
 
+      config.enable_wayland = false;
       config.color_scheme = 'Eldritch'
       config.font = wezterm.font 'JetBrains Mono'
+      config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 };
+
+      config.keys = {
+        {
+          key = 'w';
+          mods = 'CTRL|SHIFT';
+          action = wezterm.action.CloseCurrentPane { confirm = false };
+        },
+        {
+          key = 'RightArrow',
+          mods = 'LEADER|CTRL',
+          action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' },
+        },
+        {
+          key = 'DownArrow',
+          mods = 'LEADER|CTRL',
+          action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
+        }
+      };
 
        return config
     '';
@@ -155,8 +219,9 @@
 
   slippi-launcher = {
     enable = true;
-    isoPath = "/home/dillon/dolphin_games/ssbm.iso";
+    isoPath = "/home/dillon/emulation/ssbm.iso";
     launchMeleeOnPlay = false;
+    useNetplayBeta = true;
   };
 
   # This value determines the home Manager release that your
