@@ -2,8 +2,9 @@
 
 {
   # Note: hardware-configuration.nix and networking.hostName are now set in host-specific configs
-  
+
   boot.loader.systemd-boot.enable = true;
+  boot.initrd.kernelModules = [ "nvidia_drm" ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
@@ -27,6 +28,29 @@
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
   services.tailscale.enable = true;
+
+    networking.firewall.allowedTCPPorts = [19999];
+
+  services.netdata = {
+    enable = true;
+    config = {
+      global = {
+        "memory mode" = "ram";
+        "debug log" = "none";
+        "access log" = "none";
+        "error log" = "syslog";
+      };
+    };
+  };
+
+  services.netdata.package = pkgs.netdata.override {
+  withCloudUi = true;
+};
+
+systemd.services.netdata.path = [pkgs.linuxPackages.nvidia_x11];
+services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
+  nvidia_smi: yes
+'';
 
   services.xserver.xkb = {
     layout = "us";
@@ -54,8 +78,10 @@
 
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
+  security.polkit.enable = true;
   services.pipewire = {
     enable = true;
+    wireplumber.enable = true;
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
@@ -65,7 +91,7 @@
     isNormalUser = true;
     description = "Dillon";
     shell = pkgs.zsh;
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "audio" ];
     packages = with pkgs; [
       kdePackages.kate
     ];
@@ -79,6 +105,14 @@
   programs.steam.enable = true;
   programs.steam.extraCompatPackages = [ pkgs.proton-ge-bin];
   programs.fuse.userAllowOther = true;
+  programs.gamescope.enable = false;
+
+  # Enable XDG desktop portals for gamescope and other applications
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = "*";
+  };
 
   # Sets up service for periodic garbage collection
   nix.gc = {
@@ -114,7 +148,15 @@
 
 hardware.graphics.enable = true;
 services.xserver.videoDrivers = [ "nvidia" ];
-hardware.nvidia.open = true;  # see the note above
+hardware.nvidia.open = true;
+hardware.nvidia.modesetting.enable = true;
+hardware.nvidia.powerManagement.enable = false;
+
+hardware.graphics.extraPackages = [ pkgs.libvdpau-va-gl ]; #NVIDIA doesn't support libvdpau, so this package will redirect VDPAU calls to LIBVA.
+
+environment.variables.VDPAU_DRIVER = "va_gl";
+environment.variables.LIBVA_DRIVER_NAME = "nvidia";
+
 
 
   environment.systemPackages = with pkgs; [

@@ -1,6 +1,7 @@
 { config, pkgs, ... }:
 
 {
+  programs.niri.enable = true;
   # Electron apps need to be run in a Wayland session
   programs.niri.settings.environment."NIXOS_OZONE_WL" = "1";
   # Dolphin related to fuse mounting
@@ -80,6 +81,16 @@
     "Mod+Ctrl+Shift+Down".action = move-column-to-monitor-down;
     "Mod+Ctrl+Shift+Up".action = move-column-to-monitor-up;
     "Mod+Ctrl+Shift+Right".action = move-column-to-monitor-right;
+
+    "Mod+V".action = toggle-window-floating;
+    
+    "Print".action.screenshot = [ ];
+    "Shift+Print".action.screenshot-window = [ ];
+    "Ctrl+Print".action.screenshot-screen = [ ];
+    # Show keybindings help
+    "Mod+Shift+Slash".action = show-hotkey-overlay;
   };
+
+
 }
 
