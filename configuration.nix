@@ -7,6 +7,16 @@
   boot.initrd.kernelModules = [ "nvidia_drm" ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  
+  # Performance-oriented kernel parameters for gaming
+  boot.kernelParams = [
+    # Disable CPU mitigations for better performance (security tradeoff)
+    "mitigations=off"
+    # Disable watchdog for slight performance improvement
+    "nowatchdog"
+    # Set preemption model for better gaming performance
+    "preempt=full"
+  ];
 
   networking.networkmanager.enable = true;
 
@@ -87,6 +97,20 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
     pulse.enable = true;
   };
 
+  # CPU governor for performance
+  powerManagement.cpuFreqGovernor = "performance";
+
+  # System-level performance tuning
+  boot.kernel.sysctl = {
+    # Reduce swappiness for better gaming performance
+    "vm.swappiness" = 10;
+    # Increase file handles for better performance
+    "fs.file-max" = 524288;
+    # Network optimizations
+    "net.core.rmem_max" = 134217728;
+    "net.core.wmem_max" = 134217728;
+  };
+
   users.users.dillon = {
     isNormalUser = true;
     description = "Dillon";
@@ -106,6 +130,25 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
   programs.steam.extraCompatPackages = [ pkgs.proton-ge-bin];
   programs.fuse.userAllowOther = true;
   programs.gamescope.enable = false;
+  
+  # Enable GameMode for better gaming performance
+  programs.gamemode = {
+    enable = true;
+    settings = {
+      general = {
+        renice = 10;
+      };
+      gpu = {
+        apply_gpu_optimisations = "accept-responsibility";
+        gpu_device = 0;
+        amd_performance_level = "high";
+      };
+      custom = {
+        start = "${pkgs.libnotify}/bin/notify-send 'GameMode started'";
+        end = "${pkgs.libnotify}/bin/notify-send 'GameMode ended'";
+      };
+    };
+  };
 
   # Enable XDG desktop portals for gamescope and other applications
   xdg.portal = {
@@ -150,12 +193,25 @@ hardware.graphics.enable = true;
 services.xserver.videoDrivers = [ "nvidia" ];
 hardware.nvidia.open = true;
 hardware.nvidia.modesetting.enable = true;
-hardware.nvidia.powerManagement.enable = false;
+# Enable power management for better performance consistency
+hardware.nvidia.powerManagement.enable = true;
+# Disable experimental fine-grained power management
+hardware.nvidia.powerManagement.finegrained = false;
+# Force maximum performance mode
+hardware.nvidia.forceFullCompositionPipeline = false;
 
 hardware.graphics.extraPackages = [ pkgs.libvdpau-va-gl ]; #NVIDIA doesn't support libvdpau, so this package will redirect VDPAU calls to LIBVA.
 
-environment.variables.VDPAU_DRIVER = "va_gl";
-environment.variables.LIBVA_DRIVER_NAME = "nvidia";
+environment.variables = {
+  VDPAU_DRIVER = "va_gl";
+  LIBVA_DRIVER_NAME = "nvidia";
+  # NVIDIA performance optimizations
+  __GL_THREADED_OPTIMIZATION = "1";
+  __GL_SHADER_DISK_CACHE = "1";
+  __GL_SHADER_DISK_CACHE_SKIP_CLEANUP = "1";
+  # Force GPU to maximum performance
+  __GL_SYNC_TO_VBLANK = "0";
+};
 
 
 

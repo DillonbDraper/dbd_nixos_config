@@ -46,6 +46,8 @@
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
+    libreoffice-fresh
+
     inputs.niri.packages.${pkgs.system}.xwayland-satellite-unstable
     fastfetch
 
@@ -105,6 +107,8 @@
     runelite
     lutris
     gamescope
+    gamemode
+    libnotify
     input-integrity-lossless
 
     # db introspection
@@ -234,4 +238,5 @@
   # changes in each release.
   home.stateVersion = "25.05";
 }
+
 
