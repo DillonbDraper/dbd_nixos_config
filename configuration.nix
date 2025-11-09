@@ -67,9 +67,9 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
     variant = "";
   };
 
-  # Keyboard repeat rate settings (delay in ms, rate in repeats/sec)
+  # Keyboard repeat rate settings (delay in ms, rate in repeats/sec, for X11 only)
   services.xserver.autoRepeatDelay = 300;
-  services.xserver.autoRepeatInterval = 5;  # interval in ms between repeats (50 = 20 repeats/sec)
+  services.xserver.autoRepeatInterval = 50;  # interval in ms between repeats (smaller = faster)
 
   services.udev.packages = [
     (pkgs.writeTextFile {
@@ -210,6 +210,13 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
   # Enable firmware for Bluetooth and other hardware
   hardware.enableRedistributableFirmware = true;
   
+  # Disable old problematic ASUS Realtek adapter (Device 0b05:18eb)
+  # Only use the new Edimax adapter
+  services.udev.extraRules = ''
+    # Disable the old ASUS Realtek Bluetooth adapter
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18eb", ATTR{authorized}="0"
+  '';
+  
   hardware.bluetooth = {
   enable = true;
   powerOnBoot = true;
@@ -222,6 +229,18 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
       # the tradeoff is increased power consumption. Defaults to
       # 'false'.
       FastConnectable = true;
+      # Enable device name resolution
+      Name = "marth";
+      # Permanently enable pairable mode
+      Pairable = true;
+      # Always be discoverable
+      Discoverable = true;
+      # Timeout for discoverable mode (0 = never timeout)
+      DiscoverableTimeout = 0;
+      # Timeout for pairable mode (0 = never timeout)
+      PairableTimeout = 0;
+      # Allow connections from any device
+      JustWorksRepairing = "always";
     };
     Policy = {
       # Enable all controllers when they are found. This includes
