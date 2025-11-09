@@ -2,6 +2,13 @@
 
 {
   programs.niri.enable = true;
+  
+  # Keyboard repeat settings
+  programs.niri.settings.input.keyboard = {
+    repeat-delay = 300;  # milliseconds before key starts repeating
+    repeat-rate = 60;    # characters per second when held
+  };
+  
   # Electron apps need to be run in a Wayland session
   programs.niri.settings.environment."NIXOS_OZONE_WL" = "1";
   # Dolphin related to fuse mounting

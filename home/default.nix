@@ -114,6 +114,9 @@
     # db introspection
     jetbrains.datagrip
     dbeaver-bin
+
+    # Abandon hope all ye who enter here
+    emacs-pgtk
   ];
 
   services.tailscale-systray.enable = true;

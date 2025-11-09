@@ -67,6 +67,10 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
     variant = "";
   };
 
+  # Keyboard repeat rate settings (delay in ms, rate in repeats/sec)
+  services.xserver.autoRepeatDelay = 300;
+  services.xserver.autoRepeatInterval = 5;  # interval in ms between repeats (50 = 20 repeats/sec)
+
   services.udev.packages = [
     (pkgs.writeTextFile {
       name = "gcadapter-udev-rules";
@@ -96,6 +100,42 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
     alsa.support32Bit = true;
     pulse.enable = true;
   };
+  
+  # WirePlumber Bluetooth configuration
+  services.pipewire.wireplumber.extraConfig.bluetoothEnhancements = {
+    "monitor.bluez.properties" = {
+      "bluez5.enable-sbc-xq" = true;
+      "bluez5.enable-msbc" = true;
+      "bluez5.enable-hw-volume" = true;
+      "bluez5.roles" = [ "hsp_hs" "hsp_ag" "hfp_hf" "hfp_ag" ];
+    };
+  };
+
+  services.keyd = {
+  enable = true;
+  keyboards = {
+    # The name is just the name of the configuration file, it does not really matter
+    default = {
+      ids = [ "*" ]; # what goes into the [id] section, here we select all keyboards
+      # Everything but the ID section:
+      settings = {
+        # The main layer, if you choose to declare it in Nix
+        main = {
+          capslock = "layer(control)";
+          shift = "oneshot(shift)";
+          meta = "oneshot(meta)";
+          control = "oneshot(control)";
+          leftalt = "oneshot(alt)";
+          rightalt = "oneshot(altgr)";
+        };
+        otherlayer = {};
+      };
+      extraConfig = ''
+        # put here any extra-config, e.g. you can copy/paste here directly a configuration, just remove the ids part
+      '';
+    };
+  };
+};
 
   # CPU governor for performance
   powerManagement.cpuFreqGovernor = "performance";
@@ -167,6 +207,9 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Enable firmware for Bluetooth and other hardware
+  hardware.enableRedistributableFirmware = true;
+  
   hardware.bluetooth = {
   enable = true;
   powerOnBoot = true;
@@ -223,6 +266,8 @@ environment.variables = {
     wezterm
     discord
     libdisplay-info
+    bluez
+    bluez-tools
   ];
 
   fonts.packages = with pkgs; [
