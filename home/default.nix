@@ -28,20 +28,34 @@
     }
   '';
 
-  # WirePlumber configuration to set default audio device
+  # WirePlumber configuration to set device priorities
+  # Built-in audio has high priority, but Bluetooth can override when connected
   xdg.configFile."wireplumber/main.lua.d/51-default-device.lua".text = ''
-    rule = {
+    -- Built-in audio gets priority, but not so high that Bluetooth can't override
+    alsa_rule = {
       matches = {
         {
           { "node.name", "equals", "alsa_output.pci-0000_00_1f.3.analog-stereo" },
         },
       },
       apply_properties = {
+        ["node.priority"] = 900,
+      },
+    }
+    table.insert(alsa_monitor.rules, alsa_rule)
+    
+    -- Bluetooth devices get higher priority when connected
+    bluetooth_rule = {
+      matches = {
+        {
+          { "node.name", "matches", "bluez*" },
+        },
+      },
+      apply_properties = {
         ["node.priority"] = 1000,
       },
     }
-
-    table.insert(alsa_monitor.rules, rule)
+    table.insert(bluez_monitor.rules, bluetooth_rule)
   '';
 
   # Packages that should be installed to the user profile.
