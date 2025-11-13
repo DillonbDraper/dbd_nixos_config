@@ -34,9 +34,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.quickshell.follows = "quickshell";  # Use same quickshell version
     };
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi, sops-nix, ... }: {
     # Custom packages overlay
     overlays.default = final: prev: {
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
