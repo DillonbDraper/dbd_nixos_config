@@ -129,8 +129,30 @@
     jetbrains.datagrip
     dbeaver-bin
 
+    # secrets-management
+    sops
     # Abandon hope all ye who enter here
-    emacs-pgtk
+    # Emacs with extra tools always available in its PATH
+    (pkgs.symlinkJoin {
+      name = "emacs-with-packages";
+      paths = [ emacs-pgtk ];
+      buildInputs = [ pkgs.makeWrapper ];
+      postBuild = ''
+        wrapProgram $out/bin/emacs \
+          --prefix PATH : ${lib.makeBinPath [
+            # Add tools that should always be available to Emacs
+            postgresql_16  # or whatever version you want as default
+            ripgrep        # for better search
+            fd             # for finding files
+            git            # for magit
+            # Add other tools here
+          ]}
+      '';
+    })
+    cmake
+    gnumake
+    gcc
+    libtool
   ];
 
   services.tailscale-systray.enable = true;
