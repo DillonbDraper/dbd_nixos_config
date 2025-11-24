@@ -279,6 +279,9 @@ environment.sessionVariables = {
   EDITOR = "emacs";
 };
 
+  # Strangley required for input fonts
+ nixpkgs.config.input-fonts.acceptLicense = true;
+
   environment.systemPackages = with pkgs; [
     git
     zed-editor
@@ -289,6 +292,13 @@ environment.sessionVariables = {
     libdisplay-info
     bluez
     bluez-tools
+    coreutils
+    ripgrep
+    fd
+    clang
+    cmake
+    emacs-pgtk
+    libtool
   ];
 
   fonts.packages = with pkgs; [

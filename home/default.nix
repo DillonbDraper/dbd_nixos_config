@@ -78,7 +78,16 @@
     # misc
     file
     which
+
+    #fonts
+    fira-code
+    input-fonts
+    cascadia-code
+    monaspace
+
+    # LLM CLI Tooling
     gemini-cli
+    aider-chat-full
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -129,30 +138,12 @@
     jetbrains.datagrip
     dbeaver-bin
 
+    # Build tools for expert elixir LSP
+    just
+    zig
+
     # secrets-management
     sops
-    # Abandon hope all ye who enter here
-    # Emacs with extra tools always available in its PATH
-    (pkgs.symlinkJoin {
-      name = "emacs-with-packages";
-      paths = [ emacs-pgtk ];
-      buildInputs = [ pkgs.makeWrapper ];
-      postBuild = ''
-        wrapProgram $out/bin/emacs \
-          --prefix PATH : ${lib.makeBinPath [
-            # Add tools that should always be available to Emacs
-            postgresql_16  # or whatever version you want as default
-            ripgrep        # for better search
-            fd             # for finding files
-            git            # for magit
-            # Add other tools here
-          ]}
-      '';
-    })
-    cmake
-    gnumake
-    gcc
-    libtool
   ];
 
   services.tailscale-systray.enable = true;
@@ -211,6 +202,10 @@
         "starship"
       ];
     };
+    initContent = 
+  ''
+  export PATH="$PATH":"$HOME/.emacs.d/bin"
+  '';
     shellAliases = {
       ll = "ls -l";
       ga = "git add --all";
