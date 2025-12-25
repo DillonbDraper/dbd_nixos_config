@@ -7,7 +7,7 @@
   boot.initrd.kernelModules = [ "nvidia_drm" ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  
+
   # Performance-oriented kernel parameters for gaming
   boot.kernelParams = [
     # Disable CPU mitigations for better performance (security tradeoff)
@@ -38,8 +38,20 @@
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
   services.tailscale.enable = true;
+  services.jellyfin = {
+    enable = true;
+    openFirewall = true;
+  };
+  services.mullvad-vpn = {
+    enable = true;
+    package = pkgs.mullvad-vpn;
 
-    networking.firewall.allowedTCPPorts = [19999];
+    # Mullvad acct number: 4603559468703601
+  };
+
+
+
+  networking.firewall.allowedTCPPorts = [19999];
 
   services.netdata = {
     enable = true;
@@ -90,9 +102,16 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
 
   services.printing.enable = true;
 
+  services.avahi = {
+  enable = true;
+  nssmdns4 = true;
+  openFirewall = true;
+};
+
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   security.polkit.enable = true;
+  security.soteria.enable = true;
   services.pipewire = {
     enable = true;
     wireplumber.enable = true;
@@ -100,7 +119,7 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
     alsa.support32Bit = true;
     pulse.enable = true;
   };
-  
+
   # WirePlumber Bluetooth configuration
   services.pipewire.wireplumber.extraConfig.bluetoothEnhancements = {
     "monitor.bluez.properties" = {
@@ -122,10 +141,7 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
         # The main layer, if you choose to declare it in Nix
         main = {
           capslock = "layer(control)";
-          shift = "oneshot(shift)";
-          meta = "oneshot(meta)";
           control = "oneshot(control)";
-          leftalt = "oneshot(alt)";
           rightalt = "oneshot(altgr)";
         };
         otherlayer = {};
@@ -170,7 +186,7 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
   programs.steam.extraCompatPackages = [ pkgs.proton-ge-bin];
   programs.fuse.userAllowOther = true;
   programs.gamescope.enable = false;
-  
+
   # Enable GameMode for better gaming performance
   programs.gamemode = {
     enable = true;
@@ -209,14 +225,14 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
 
   # Enable firmware for Bluetooth and other hardware
   hardware.enableRedistributableFirmware = true;
-  
+
   # Disable old problematic ASUS Realtek adapter (Device 0b05:18eb)
   # Only use the new Edimax adapter
   services.udev.extraRules = ''
     # Disable the old ASUS Realtek Bluetooth adapter
     SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="18eb", ATTR{authorized}="0"
   '';
-  
+
   hardware.bluetooth = {
   enable = true;
   powerOnBoot = true;
@@ -230,7 +246,7 @@ services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
       # 'false'.
       FastConnectable = true;
       # Enable device name resolution
-      Name = "marth";
+      Name = "dillon";
       # Permanently enable pairable mode
       Pairable = true;
       # Always be discoverable
@@ -284,7 +300,7 @@ environment.sessionVariables = {
 
   environment.systemPackages = with pkgs; [
     git
-    zed-editor
+    zed-editor-fhs
     code-cursor-fhs
     zsh
     wezterm
@@ -299,6 +315,9 @@ environment.sessionVariables = {
     cmake
     emacs-pgtk
     libtool
+    jellyfin
+    jellyfin-web
+    jellyfin-ffmpeg
   ];
 
   fonts.packages = with pkgs; [
