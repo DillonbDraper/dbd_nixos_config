@@ -43,7 +43,7 @@
       },
     }
     table.insert(alsa_monitor.rules, alsa_rule)
-    
+
     -- Bluetooth devices get higher priority when connected
     bluetooth_rule = {
       matches = {
@@ -84,10 +84,13 @@
     input-fonts
     cascadia-code
     monaspace
+    alegreya
 
     # LLM CLI Tooling
     gemini-cli
     aider-chat-full
+    cursor-cli
+    cursor-agent-acp-npm
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -202,9 +205,11 @@
         "starship"
       ];
     };
-    initContent = 
+    initContent =
   ''
   export PATH="$PATH":"$HOME/.emacs.d/bin"
+  export OBAN_KEY_FINGERPRINT="SHA256:4/OSKi0NRF91QVVXlGAhb/BIMLnK8NHcx/EWs+aIWPc"
+  export OBAN_LICENSE_KEY="qnrrk2muvxyq4zxueuwdbzqdpflb453n"
   '';
     shellAliases = {
       ll = "ls -l";
@@ -272,5 +277,3 @@
   # changes in each release.
   home.stateVersion = "25.05";
 }
-
-

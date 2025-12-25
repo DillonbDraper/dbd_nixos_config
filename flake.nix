@@ -44,6 +44,7 @@
     # Custom packages overlay
     overlays.default = final: prev: {
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
+      cursor-agent-acp-npm = final.callPackage ./my_derivations/cursor_acp_bridge/default.nix {  };
     };
 
     nixosConfigurations = {
