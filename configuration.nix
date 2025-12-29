@@ -318,6 +318,7 @@ environment.sessionVariables = {
     jellyfin
     jellyfin-web
     jellyfin-ffmpeg
+    webkitgtk_6_0
   ];
 
   fonts.packages = with pkgs; [

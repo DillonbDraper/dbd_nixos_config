@@ -38,13 +38,23 @@
     sops-nix = {
       url = "github:Mic92/sops-nix";
     };
+
+    lem = {
+      url = "github:lem-project/lem";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi, sops-nix, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi, sops-nix, lem, ... }: {
     # Custom packages overlay
     overlays.default = final: prev: {
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
       cursor-agent-acp-npm = final.callPackage ./my_derivations/cursor_acp_bridge/default.nix {  };
+    };
+
+    overlays.lem = final: prev: {
+      lem = lem.packages.${prev.system}.default;
+      lem-webview = lem.packages.${prev.system}.lem-webview;
     };
 
     nixosConfigurations = {
@@ -67,7 +77,10 @@
           }
           # Apply custom overlay
           ({ config, pkgs, ... }: {
-            nixpkgs.overlays = [ self.overlays.default ];
+            nixpkgs.overlays = [
+              self.overlays.default
+              self.overlays.lem
+                               ];
           })
         ];
       };
@@ -91,7 +104,10 @@
           }
           # Apply custom overlay
           ({ config, pkgs, ... }: {
-            nixpkgs.overlays = [ self.overlays.default ];
+            nixpkgs.overlays = [
+              self.overlays.default
+              self.overlays.lem
+                               ];
           })
         ];
       };

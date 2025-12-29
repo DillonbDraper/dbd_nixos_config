@@ -147,6 +147,15 @@
 
     # secrets-management
     sops
+
+    # Music players
+    strawberry
+    quodlibet
+
+    # EXPERIMENTAL Lem
+    lem-webview
+
+    nicotine-plus
   ];
 
   services.tailscale-systray.enable = true;
