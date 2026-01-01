@@ -45,7 +45,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, slippi, sops-nix, lem, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, niri, slippi, sops-nix, lem, ... }: {
     # Custom packages overlay
     overlays.default = final: prev: {
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
@@ -56,6 +56,8 @@
       lem = lem.packages.${prev.system}.default;
       lem-webview = lem.packages.${prev.system}.lem-webview;
     };
+
+
 
     nixosConfigurations = {
       # Roy configuration
@@ -80,6 +82,7 @@
             nixpkgs.overlays = [
               self.overlays.default
               self.overlays.lem
+
                                ];
           })
         ];
@@ -107,6 +110,7 @@
             nixpkgs.overlays = [
               self.overlays.default
               self.overlays.lem
+
                                ];
           })
         ];

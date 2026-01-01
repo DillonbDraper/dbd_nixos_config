@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   # Note: hardware-configuration.nix and networking.hostName are now set in host-specific configs
@@ -49,30 +49,7 @@
     # Mullvad acct number: 4603559468703601
   };
 
-
-
   networking.firewall.allowedTCPPorts = [19999];
-
-  services.netdata = {
-    enable = true;
-    config = {
-      global = {
-        "memory mode" = "ram";
-        "debug log" = "none";
-        "access log" = "none";
-        "error log" = "syslog";
-      };
-    };
-  };
-
-  services.netdata.package = pkgs.netdata.override {
-  withCloudUi = true;
-};
-
-systemd.services.netdata.path = [pkgs.linuxPackages.nvidia_x11];
-services.netdata.configDir."python.d.conf" = pkgs.writeText "python.d.conf" ''
-  nvidia_smi: yes
-'';
 
   services.xserver.xkb = {
     layout = "us";
@@ -300,7 +277,7 @@ environment.sessionVariables = {
 
   environment.systemPackages = with pkgs; [
     git
-    zed-editor-fhs
+    zed-editor
     code-cursor-fhs
     zsh
     wezterm

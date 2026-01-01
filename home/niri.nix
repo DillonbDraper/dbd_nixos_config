@@ -1,14 +1,14 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   programs.niri.enable = true;
-  
+
   # Keyboard repeat settings
   programs.niri.settings.input.keyboard = {
     repeat-delay = 300;  # milliseconds before key starts repeating
     repeat-rate = 60;    # characters per second when held
   };
-  
+
   # Electron apps need to be run in a Wayland session
   programs.niri.settings.environment."NIXOS_OZONE_WL" = "1";
   # Dolphin related to fuse mounting
@@ -29,6 +29,7 @@
     }
   ];
 
+programs.niri.package = inputs.niri.packages.${pkgs.system}.niri-unstable.overrideAttrs (old: { doCheck = false; });
   programs.niri.settings.binds = with config.lib.niri.actions; {
     "Mod+Space".action.spawn = "fuzzel";
     "Mod+B".action.spawn = "zen-twilight";
@@ -90,7 +91,7 @@
     "Mod+Ctrl+Shift+Right".action = move-column-to-monitor-right;
 
     "Mod+V".action = toggle-window-floating;
-    
+
     "Print".action.screenshot = [ ];
     "Shift+Print".action.screenshot-window = [ ];
     "Ctrl+Print".action.screenshot-screen = [ ];
@@ -100,4 +101,3 @@
 
 
 }
-

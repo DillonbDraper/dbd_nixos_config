@@ -20,7 +20,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://dnlo0r667tlsj.cloudfront.net/LosslessAdapterManager2_Linux.gz";
-    hash = "sha256-1i4sTS1Z7D8y/8fAQzKe4mTQffWyX0sXlf2YRDdY76g=";
+    hash = "sha256-KnrjQo/GFJ7+CBhtDdX0nlOH5JeaYCIr6nKIChjAkf0=";
   };
 
   # The source is a gzipped binary, not a tarball

@@ -12,8 +12,9 @@
   sops.secrets.example-key = { };
 
   sops.age.keyFile = "/home/dillon/.config/sops/age/keys.txt";
+#   programs.niri.package = inputs.niri.packages.${pkgs.system}.default.overrideAttrs (old: {
+#   doCheck = false;
+# });
 
-
-  networking.hostName = "marth";
+ networking.hostName = "marth";
 }
-
