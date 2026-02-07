@@ -277,7 +277,6 @@ environment.sessionVariables = {
 
   environment.systemPackages = with pkgs; [
     git
-    zed-editor
     code-cursor-fhs
     zsh
     wezterm
@@ -290,6 +289,9 @@ environment.sessionVariables = {
     fd
     clang
     cmake
+    gnumake
+    libtool
+    gcc
     emacs-pgtk
     libtool
     jellyfin

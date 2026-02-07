@@ -89,6 +89,8 @@
     # LLM CLI Tooling
     gemini-cli
     aider-chat-full
+    codex
+    claude-code
     cursor-cli
     cursor-agent-acp-npm
 
@@ -152,10 +154,40 @@
     strawberry
     quodlibet
 
-    # EXPERIMENTAL Lem
+    # EXPERIMENTAL Lem + other editors
     lem-webview
+    zed-editor-fhs
 
+    # Emacs pkgs
+    elixir-ls
+    (pkgs.emacsPackages.treesit-grammars.with-grammars (p: with p; [
+      tree-sitter-bash
+      tree-sitter-css
+      tree-sitter-elixir
+      tree-sitter-heex
+      tree-sitter-html
+      tree-sitter-javascript
+      tree-sitter-json
+      tree-sitter-markdown
+      tree-sitter-python
+      tree-sitter-sql
+      tree-sitter-toml
+      tree-sitter-tsx
+      tree-sitter-typescript
+      tree-sitter-yaml
+      tree-sitter-nix
+    ]))
+    emacs-lsp-booster
+    nodePackages.typescript-language-server
+    nodePackages.typescript
+    nil
+    tree-sitter
+
+    #FOSS slsk client
     nicotine-plus
+
+    #
+    flameshot
   ];
 
   services.tailscale-systray.enable = true;
@@ -192,6 +224,9 @@
     enable = true;
     ignores = [ ".envrc" ".direnv"];
     settings = {
+      github = {
+        user = "DillonbDraper";
+      };
       user = {
         name = "Dillon Draper";
         email = "dillonbdraper@gmail.com";
