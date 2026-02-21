@@ -95,7 +95,8 @@
     claude-code
     cursor-cli
     cursor-agent-acp-npm
-    droid
+    goose-cli
+    opencode
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -191,6 +192,8 @@
 
     #
     flameshot
+    slurp
+    wl-clipboard
   ];
 
   services.tailscale-systray.enable = true;

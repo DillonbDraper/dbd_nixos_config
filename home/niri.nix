@@ -93,6 +93,7 @@ programs.niri.package = inputs.niri.packages.${pkgs.system}.niri-unstable.overri
     "Mod+V".action = toggle-window-floating;
 
     "Print".action.screenshot = [ ];
+    "Mod+Print".action.spawn = "flameshot";
     "Shift+Print".action.screenshot-window = [ ];
     "Ctrl+Print".action.screenshot-screen = [ ];
     # Show keybindings help

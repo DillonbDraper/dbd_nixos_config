@@ -6,7 +6,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.initrd.kernelModules = [ "nvidia_drm" ];
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages_6_18;
 
   # Performance-oriented kernel parameters for gaming
   boot.kernelParams = [
