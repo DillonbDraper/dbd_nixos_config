@@ -90,9 +90,12 @@
     gemini-cli
     aider-chat-full
     codex
+    codex-acp
+    opencode
     claude-code
     cursor-cli
     cursor-agent-acp-npm
+    droid
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -250,10 +253,12 @@
       ];
     };
     initContent =
-  ''
+      ''
+  export PATH=/home/dillon/.local/bin:$PATH
   export PATH="$PATH":"$HOME/.emacs.d/bin"
   export OBAN_KEY_FINGERPRINT="SHA256:4/OSKi0NRF91QVVXlGAhb/BIMLnK8NHcx/EWs+aIWPc"
   export OBAN_LICENSE_KEY="qnrrk2muvxyq4zxueuwdbzqdpflb453n"
+  
   '';
     shellAliases = {
       ll = "ls -l";
