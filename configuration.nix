@@ -277,7 +277,7 @@ environment.sessionVariables = {
 
   environment.systemPackages = with pkgs; [
     git
-    code-cursor-fhs
+    git-filter-repo
     zsh
     wezterm
     discord
