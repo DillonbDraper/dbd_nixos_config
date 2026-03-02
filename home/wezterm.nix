@@ -27,7 +27,20 @@
           key = 'DownArrow',
           mods = 'LEADER|CTRL',
           action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
-        }
+        },
+	key = 'U',
+        mods = 'CTRL|SHIFT',
+        action = wezterm.action.InputSelector {
+        title = 'Select Color Scheme',
+        choices = wezterm.color.get_builtin_schemes(),
+        fuzzy = true,
+        action = wezterm.action_callback(function(window, pane, id, label)
+          if not id then return end
+          local overrides = window:get_config_overrides() or {}
+          overrides.color_scheme = label
+          window:set_config_overrides(overrides)
+        end),
+      },
       };
 
        return config

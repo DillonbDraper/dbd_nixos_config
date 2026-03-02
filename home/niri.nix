@@ -11,6 +11,8 @@
 
   # Electron apps need to be run in a Wayland session
   programs.niri.settings.environment."NIXOS_OZONE_WL" = "1";
+  # Needed for Flameshot on Niri
+  programs.niri.settings.environment."QT_QPA_PLATFORM" = "wayland";
   # Dolphin related to fuse mounting
   programs.niri.settings.environment."FUSERMOUNT_PROG" = "/run/wrappers/bin/fusermount3";
   programs.niri.settings.environment."APPIMAGE_EXTRACT_AND_RUN" = "1";
@@ -33,7 +35,7 @@ programs.niri.package = inputs.niri.packages.${pkgs.system}.niri-unstable.overri
   programs.niri.settings.binds = with config.lib.niri.actions; {
     "Mod+Space".action.spawn = "fuzzel";
     "Mod+B".action.spawn = "zen-twilight";
-    "Mod+T".action.spawn = "wezterm";
+    "Mod+T".action.spawn = "ghostty";
     "Mod+1".action.focus-workspace = 1;
     "Mod+2".action.focus-workspace = 2;
     "Mod+3".action.focus-workspace = 3;
@@ -93,7 +95,8 @@ programs.niri.package = inputs.niri.packages.${pkgs.system}.niri-unstable.overri
     "Mod+V".action = toggle-window-floating;
 
     "Print".action.screenshot = [ ];
-    "Mod+Print".action.spawn = "flameshot";
+    "Mod+Print".allow-inhibiting = false;
+    "Mod+Print".action.spawn = [ "env" "QT_QPA_PLATFORM=wayland" "flameshot" "gui" ];
     "Shift+Print".action.screenshot-window = [ ];
     "Ctrl+Print".action.screenshot-screen = [ ];
     # Show keybindings help

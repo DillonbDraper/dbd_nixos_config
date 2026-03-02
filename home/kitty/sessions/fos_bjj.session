@@ -1,0 +1,14 @@
+# OSSBJJ (server in a persistent shell)
+new_tab OSSBJJ
+cd ~/fos_bjj
+launch --title "OSSBJJ" zsh -c "direnv exec $HOME/fos_bjj zsh -ic 'dbstop; dbstart; echo Waiting for DB...; until pg_isready -q; do sleep 0.5; done; echo DB ready.; iex -S mix phx.server; exec zsh'"
+
+# OpenCode (persistent shell) — wait for Phoenix server before launching so Tidewave MCP can connect
+new_tab OpenCode
+cd ~/fos_bjj
+launch --title "Opencode" zsh -ic 'echo "Waiting for Phoenix server..."; until curl -sf http://localhost:4000 > /dev/null; do sleep 1; done; echo "Phoenix ready."; opencode; exec zsh'
+
+# Generic scratchpad terminal
+new_tab Scratch Term
+cd ~/fos_bjj
+launch --title "Scratch" zsh

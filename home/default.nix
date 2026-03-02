@@ -7,6 +7,8 @@
     inputs.niri.homeModules.niri
     ./niri.nix
     ./starship.nix
+    ./wezterm.nix
+    ./kitty.nix
   ];
 
   home.username = "dillon";
@@ -88,7 +90,6 @@
 
     # LLM CLI Tooling
     gemini-cli
-    aider-chat-full
     codex
     codex-acp
     opencode
@@ -96,7 +97,6 @@
     cursor-cli
     cursor-agent-acp-npm
     goose-cli
-    opencode
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -155,11 +155,9 @@
     sops
 
     # Music players
-    strawberry
     quodlibet
 
-    # EXPERIMENTAL Lem + other editors
-    lem-webview
+    # EXPERIMENTAL editors
     zed-editor-fhs
 
     # Emacs pkgs
@@ -190,13 +188,21 @@
     #FOSS slsk client
     nicotine-plus
 
-    #
-    flameshot
+    # Screenshots
     slurp
     wl-clipboard
   ];
 
   services.tailscale-systray.enable = true;
+  services.flameshot = {
+  enable = true;
+  settings = {
+    General = {
+      useGrimAdapter = true;
+      disabledGrimWarning = true;
+    };
+   };
+  };
 
   programs.direnv = {
     enable = true;
@@ -261,7 +267,10 @@
   export PATH="$PATH":"$HOME/.emacs.d/bin"
   export OBAN_KEY_FINGERPRINT="SHA256:4/OSKi0NRF91QVVXlGAhb/BIMLnK8NHcx/EWs+aIWPc"
   export OBAN_LICENSE_KEY="qnrrk2muvxyq4zxueuwdbzqdpflb453n"
-  
+  export GOOGLE_CLOUD_PROJECT="best-gemini-api"
+  export VERTEX_LOCATION="global"
+  export GOOGLE_APPLICATION_CREDENTIALS=/home/dillon/best-gemini-api.json
+   
   '';
     shellAliases = {
       ll = "ls -l";
@@ -274,42 +283,11 @@
       # cursor and slippi-launcher are used to open the code editor and slippi launcher in a way that is compatible with Wayland
       cursor="cursor --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations";
       slippi-launcher="slippi-launcher --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations";
+      launch_ossbjj="kitty --session ~/.config/kitty/sessions/fos_bjj.session";
+      launch_coop="kitty --session ~/.config/kitty/sessions/member_doc.session";
     };
 
     history.size = 10000;
-  };
-
-  programs.wezterm = {
-    enable = true;
-    enableZshIntegration = true;
-    extraConfig = ''
-      local config = {}
-
-      config.enable_wayland = false;
-      config.color_scheme = 'Eldritch'
-      config.font = wezterm.font 'JetBrains Mono'
-      config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 };
-
-      config.keys = {
-        {
-          key = 'w';
-          mods = 'CTRL|SHIFT';
-          action = wezterm.action.CloseCurrentPane { confirm = false };
-        },
-        {
-          key = 'RightArrow',
-          mods = 'LEADER|CTRL',
-          action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' },
-        },
-        {
-          key = 'DownArrow',
-          mods = 'LEADER|CTRL',
-          action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
-        }
-      };
-
-       return config
-    '';
   };
 
   slippi-launcher = {
