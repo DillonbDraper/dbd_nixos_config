@@ -4,6 +4,10 @@
   inputs = {
     # NixOS official package source, using the nixos-unstable branch
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    expert = {
+      url = "github:elixir-lang/expert";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,6 +25,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    claude-code = {
+    url = "github:sadjow/claude-code-nix" ;
+    inputs.nixpkgs.follows = "nixpkgs";
+    };
+    
     niri = {
       url = "github:sodiboo/niri-flake";
     };
@@ -41,15 +50,41 @@
 
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, niri, slippi, sops-nix, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, zen-browser, niri, slippi, sops-nix, expert, claude-code, ... }:
+  let
+    systems = [
+      "x86_64-linux"
+      "aarch64-darwin"
+    ];
+    forAllSystems = f:
+      nixpkgs.lib.genAttrs systems (system:
+        f {
+          inherit system;
+          pkgs = nixpkgs.legacyPackages.${system};
+        });
+  in {
     # Custom packages overlay
     overlays.default = final: prev: {
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
       cursor-agent-acp-npm = final.callPackage ./my_derivations/cursor_acp_bridge/default.nix {  };
+      devicon-lookup = final.callPackage ./my_derivations/devicon_lookup/default.nix { };
       droid = final.callPackage ./my_derivations/droid/default.nix { buildFHSEnv = final.buildFHSEnv; };
     };
 
 
+
+    devShells = forAllSystems ({
+      system,
+      pkgs,
+    }: {
+      default = pkgs.mkShell {
+        packages = with pkgs; [
+          elixir_1_18
+          erlang
+          expert.packages.${system}.default
+        ];
+      };
+    });
 
     nixosConfigurations = {
       # Roy configuration
@@ -70,11 +105,12 @@
             home-manager.extraSpecialArgs = { inherit inputs; };
           }
           # Apply custom overlay
-          ({ config, pkgs, ... }: {
+          ({ ... }: {
             nixpkgs.overlays = [
+              claude-code.overlays.default
               self.overlays.default
 
-                               ];
+            ];
           })
         ];
       };
@@ -97,11 +133,11 @@
             home-manager.extraSpecialArgs = { inherit inputs; };
           }
           # Apply custom overlay
-          ({ config, pkgs, ... }: {
+          ({ ... }: {
             nixpkgs.overlays = [
+              claude-code.overlays.default
               self.overlays.default
-
-                               ];
+            ];
           })
         ];
       };

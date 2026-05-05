@@ -4,6 +4,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./diag.nix
     inputs.sops-nix.nixosModules.sops
   ];
 

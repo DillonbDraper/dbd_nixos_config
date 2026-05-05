@@ -1,7 +1,10 @@
+
+
 { config, pkgs, inputs, ... }:
 
 {
   imports = [
+    inputs.sops-nix.homeManagerModules.sops
     inputs.zen-browser.homeModules.twilight
     inputs.slippi.homeManagerModules.slippi-launcher
     inputs.niri.homeModules.niri
@@ -13,6 +16,22 @@
 
   home.username = "dillon";
   home.homeDirectory = "/home/dillon";
+
+  systemd.user.startServices = "sd-switch";
+
+  sops = {
+    defaultSopsFile = ../secrets/secrets.yaml;
+    defaultSopsFormat = "yaml";
+    age.keyFile = "/home/dillon/.config/sops/age/keys.txt";
+
+    secrets = {
+      ossbjj-google-client-secret = { };
+      ossbjj-google-client-id = { };
+      ossbjj-google-redirect-uri = { };
+      oban-key-fingerprint = { };
+      oban-license-key = { };
+    };
+  };
 
   # ALSA configuration for PipeWire
   home.file.".asoundrc".text = ''
@@ -63,9 +82,14 @@
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     libreoffice-fresh
+    obs-studio
+    livebook
+    docker
 
     inputs.niri.packages.${pkgs.system}.xwayland-satellite-unstable
+    (pkgs.lib.hiPrio inputs.expert.packages.${pkgs.system}.default)
     fastfetch
+    hyperfine
 
     # archives
     zip
@@ -74,8 +98,15 @@
     p7zip
 
     # utils
-    ripgrep # recursively searches directories for a regex pattern
+    ripgrep # Faster grep
+    fzf # Fuzzy find
+    devicon-lookup # Icon utility for commands
+    yazi # File explorer
+    lf # File explorer
+    grc # colorizer for other commands
+    bat # cat clone with extra goodies
     jq # A lightweight and flexible command-line JSON processor
+    cloc # code loc/types of code checker
 
     # misc
     file
@@ -91,12 +122,9 @@
     # LLM CLI Tooling
     gemini-cli
     codex
-    codex-acp
+    # codex-acp 
     opencode
     claude-code
-    cursor-cli
-    cursor-agent-acp-npm
-    goose-cli
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -107,6 +135,7 @@
     hugo # static site generator
     glow # markdown previewer in terminal
     zoom-us # video conferencing
+    pandoc # Document conversion/processing
 
     btop  # replacement of htop/nmon
     iftop # network monitoring
@@ -128,20 +157,24 @@
 
     # Terminal emulators
     alacritty
-    rio
     kitty
     ghostty
-
+    foot
+    vtebench
+    rio
+    xfce4-terminal
+    st
+    
     # Launcher
     fuzzel
 
     # gaming
     runelite
-    lutris
     gamescope
     gamemode
     libnotify
-    input-integrity-lossless
+    input-integrity-lossless # My locally packaged GCC adapter
+    dorion # alt discord client
 
     # db introspection
     jetbrains.datagrip
@@ -156,12 +189,26 @@
 
     # Music players
     quodlibet
+    mpv
+    deno
+    mpvScripts.mpris
+    mpvScripts.uosc
+    mpvScripts.sponsorblock-minimal
 
-    # EXPERIMENTAL editors
+    # editors
     zed-editor-fhs
+    neovim
+    helix
+    kakoune
 
     # Emacs pkgs
     elixir-ls
+     (aspellWithDicts (dicts: with dicts; [
+      fr
+      en
+      en-computers
+      en-science
+    ]))
     (pkgs.emacsPackages.treesit-grammars.with-grammars (p: with p; [
       tree-sitter-bash
       tree-sitter-css
@@ -180,8 +227,8 @@
       tree-sitter-nix
     ]))
     emacs-lsp-booster
-    nodePackages.typescript-language-server
-    nodePackages.typescript
+    typescript-language-server
+    typescript
     nil
     tree-sitter
 
@@ -265,11 +312,15 @@
       ''
   export PATH=/home/dillon/.local/bin:$PATH
   export PATH="$PATH":"$HOME/.emacs.d/bin"
-  export OBAN_KEY_FINGERPRINT="SHA256:4/OSKi0NRF91QVVXlGAhb/BIMLnK8NHcx/EWs+aIWPc"
-  export OBAN_LICENSE_KEY="qnrrk2muvxyq4zxueuwdbzqdpflb453n"
+
   export GOOGLE_CLOUD_PROJECT="best-gemini-api"
   export VERTEX_LOCATION="global"
   export GOOGLE_APPLICATION_CREDENTIALS=/home/dillon/best-gemini-api.json
+  export OSSBJJ_GOOGLE_CLIENT_SECRET="$(<"${config.sops.secrets.ossbjj-google-client-secret.path}")"
+  export OSSBJJ_GOOGLE_CLIENT_ID="$(<"${config.sops.secrets.ossbjj-google-client-id.path}")"
+  export OSSBJJ_GOOGLE_REDIRECT_URI="$(<"${config.sops.secrets.ossbjj-google-redirect-uri.path}")"
+  export OBAN_KEY_FINGERPRINT="$(<"${config.sops.secrets.oban-key-fingerprint.path}")"
+  export OBAN_LICENSE_KEY="$(<"${config.sops.secrets.oban-license-key.path}")"
    
   '';
     shellAliases = {

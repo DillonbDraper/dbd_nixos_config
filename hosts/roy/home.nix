@@ -10,4 +10,3 @@
     update = "sudo nixos-rebuild switch --flake .#roy";
   };
 }
-

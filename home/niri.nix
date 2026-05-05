@@ -16,6 +16,26 @@
   # Dolphin related to fuse mounting
   programs.niri.settings.environment."FUSERMOUNT_PROG" = "/run/wrappers/bin/fusermount3";
   programs.niri.settings.environment."APPIMAGE_EXTRACT_AND_RUN" = "1";
+  # Verbose niri logging for cold-boot crash diagnosis.
+  programs.niri.settings.environment."RUST_LOG" = "niri=debug,smithay=info";
+
+  programs.niri.settings.window-rules = [
+    {
+      matches = [
+        { app-id = "^ee-foot$"; }
+        { title = "^ee-foot$"; }
+      ];
+      open-floating = true;
+      open-focused = true;
+      default-column-width = { proportion = 0.80; };
+      default-window-height = { proportion = 0.70; };
+      default-floating-position = {
+        x = 0;
+        y = 0;
+        relative-to = "top";
+      };
+    }
+  ];
 
 
   programs.niri.settings.spawn-at-startup = [
