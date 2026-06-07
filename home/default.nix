@@ -107,6 +107,7 @@
     bat # cat clone with extra goodies
     jq # A lightweight and flexible command-line JSON processor
     cloc # code loc/types of code checker
+    difftastic # syntax aware diff tool
 
     # misc
     file
@@ -125,6 +126,7 @@
     # codex-acp 
     opencode
     claude-code
+    pi-coding-agent-custom
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -191,6 +193,7 @@
     quodlibet
     mpv
     deno
+    tauon
     mpvScripts.mpris
     mpvScripts.uosc
     mpvScripts.sponsorblock-minimal
@@ -228,12 +231,17 @@
     ]))
     emacs-lsp-booster
     typescript-language-server
+    marksman
+    basedpyright
     typescript
     nil
     tree-sitter
 
     #FOSS slsk client
     nicotine-plus
+
+    # Youtube downloader
+    yt-dlp
 
     # Screenshots
     slurp

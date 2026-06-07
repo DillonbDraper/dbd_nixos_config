@@ -68,6 +68,7 @@
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
       cursor-agent-acp-npm = final.callPackage ./my_derivations/cursor_acp_bridge/default.nix {  };
       devicon-lookup = final.callPackage ./my_derivations/devicon_lookup/default.nix { };
+      pi-coding-agent-custom = final.callPackage ./my_derivations/pi_coding_agent/default.nix { };
       droid = final.callPackage ./my_derivations/droid/default.nix { buildFHSEnv = final.buildFHSEnv; };
     };
 

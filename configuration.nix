@@ -36,6 +36,7 @@
 
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
+  services.displayManager.sddm.wayland.enable = false; # kwin_wayland fights niri for DRM master; use X11 greeter instead
   services.desktopManager.plasma6.enable = true;
   services.tailscale.enable = true;
   services.jellyfin = {
