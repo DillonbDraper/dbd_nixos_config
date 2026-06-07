@@ -23,5 +23,5 @@
   export SECRET_KEY_BASE="$(<"${config.sops.secrets.ossbjj-secret-key-base.path}")"
   export TOKEN_SIGNING_SECRET="$(<"${config.sops.secrets.ossbjj-token-signing-secret.path}")"
   export DATABASE_URL="$(<"${config.sops.secrets.ossbjj-database-url.path}")"
-  ''
+  '';
 }
