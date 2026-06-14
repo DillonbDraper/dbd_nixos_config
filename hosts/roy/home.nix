@@ -14,7 +14,7 @@
     ossbjj-secret-key-base = { };
     ossbjj-token-signing-secret = { };
     ossbjj-database-url = { };
-  };
+ };
 
   programs.zsh.shellAliases = {
     update = "sudo nixos-rebuild switch --flake .#roy";
@@ -27,7 +27,8 @@
   export IN_ACTION_VIDEO_STORAGE="r2"
   export IN_ACTION_VIDEO_TMP_DIR="/tmp/fos-bjj-in-action"
   export R2_ACCOUNT_ID="$(<"${config.sops.secrets.r2_account_id.path}")"
-  export R2_BUCKET="$(<"${config.sops.secrets.r2_bucket.path}")"
+
+  export R2_BUCKET="ossbjj-clips"
   export R2_ACCESS_KEY_ID="$(<"${config.sops.secrets.r2_access_key_id.path}")"
   export R2_SECRET_ACCESS_KEY="$(<"${config.sops.secrets.r2_secret_access_key.path}")"
   export SECRET_KEY_BASE="$(<"${config.sops.secrets.ossbjj-secret-key-base.path}")"
