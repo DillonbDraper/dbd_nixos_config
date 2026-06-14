@@ -6,7 +6,6 @@
   imports = [
     inputs.sops-nix.homeManagerModules.sops
     inputs.zen-browser.homeModules.twilight
-    inputs.slippi.homeManagerModules.slippi-launcher
     inputs.niri.homeModules.niri
     ./niri.nix
     ./starship.nix
@@ -81,19 +80,14 @@
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
-    libreoffice-fresh
-    obs-studio
-    livebook
     docker
 
     inputs.niri.packages.${pkgs.system}.xwayland-satellite-unstable
     (pkgs.lib.hiPrio inputs.expert.packages.${pkgs.system}.default)
     fastfetch
-    hyperfine
 
     # archives
     zip
-    xz
     unzip
     p7zip
 
@@ -121,17 +115,12 @@
     alegreya
 
     # LLM CLI Tooling
-    gemini-cli
-    codex
     # codex-acp 
-    opencode
-    claude-code
     pi-coding-agent-custom
 
     # nix related
     # it provides the command `nom` works just like `nix`
     # with more details log output
-    nix-output-monitor
 
     # productivity
     hugo # static site generator
@@ -151,32 +140,18 @@
     lsof # list open files
 
     # torrent
-    qbittorrent
 
     # vpn/work suite
     tailscale
-    mattermost-desktop
+    proton-vpn
 
     # Terminal emulators
-    alacritty
     kitty
-    ghostty
-    foot
-    vtebench
-    rio
-    xfce4-terminal
-    st
     
     # Launcher
     fuzzel
 
     # gaming
-    runelite
-    gamescope
-    gamemode
-    libnotify
-    input-integrity-lossless # My locally packaged GCC adapter
-    dorion # alt discord client
 
     # db introspection
     jetbrains.datagrip
@@ -191,18 +166,11 @@
 
     # Music players
     quodlibet
-    mpv
-    deno
-    tauon
-    mpvScripts.mpris
-    mpvScripts.uosc
-    mpvScripts.sponsorblock-minimal
 
     # editors
     zed-editor-fhs
     neovim
     helix
-    kakoune
 
     # Emacs pkgs
     elixir-ls
@@ -347,13 +315,6 @@
     };
 
     history.size = 10000;
-  };
-
-  slippi-launcher = {
-    enable = true;
-    isoPath = "/home/dillon/emulation/ssbm.iso";
-    launchMeleeOnPlay = false;
-    useNetplayBeta = true;
   };
 
   # This value determines the home Manager release that your

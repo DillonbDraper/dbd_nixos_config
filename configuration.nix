@@ -39,16 +39,6 @@
   services.displayManager.sddm.wayland.enable = false; # kwin_wayland fights niri for DRM master; use X11 greeter instead
   services.desktopManager.plasma6.enable = true;
   services.tailscale.enable = true;
-  services.jellyfin = {
-    enable = true;
-    openFirewall = true;
-  };
-  services.mullvad-vpn = {
-    enable = true;
-    package = pkgs.mullvad-vpn;
-
-    # Mullvad acct number: 4603559468703601
-  };
 
   networking.firewall.allowedTCPPorts = [19999];
 

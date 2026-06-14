@@ -46,7 +46,7 @@
     }
     {
       command = [
-        "noctalia-shell"
+        "noctalia"
       ];
     }
   ];
