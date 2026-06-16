@@ -24,11 +24,6 @@
       options = [ "fmask=0077" "dmask=0077" ];
     };
 
-  fileSystems."/old_hdd" =
-    { device = "/dev/disk/by-uuid/3ECE27AACE275983";
-      fsType = "ntfs";
-    };
-
   swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
