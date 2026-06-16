@@ -38,12 +38,16 @@
   };
 
   # Prevent systemd from ever suspending or hibernating this machine.
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-    AllowHibernation=no
-    AllowSuspendThenHibernate=no
-    AllowHybridSleep=no
-  '';
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "no";
+    AllowHibernation = "no";
+    AllowSuspendThenHibernate = "no";
+    AllowHybridSleep = "no";
+  };
+
+  # KDE Plasma enables power-profiles-daemon by default; disable it so TLP
+  # can manage power without conflicting.
+  services.power-profiles-daemon.enable = false;
 
   # Battery charge limit for always-plugged-in use.
   # ThinkPad ACPI exposes charge thresholds natively; TLP writes them at boot.

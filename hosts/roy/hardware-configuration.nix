@@ -27,8 +27,15 @@
   fileSystems."/svr/newDrive" =
     { device = "/dev/disk/by-uuid/b05922d6-a0ec-4f15-8a72-c90b0bdc7f5a";
       fsType = "ext4";
+      options = ["nofail"];
     };
 
+  fileSystems."/svr/old_hdd" =
+    { device = "/dev/disk/by-uuid/3ECE27AACE275983";
+      fsType = "ntfs-3g";
+      options = ["nofail"];
+    };
+  
   swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking

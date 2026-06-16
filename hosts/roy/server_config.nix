@@ -4,10 +4,10 @@
 { config, lib, pkgs, ... }:
 
 let
-  mediaRoot = "/srv/media";
+  mediaRoot = "/svr/newDrive";
 
   # Roy's reserved DHCP/static LAN address. Change this before building.
-  serverLanIp = "192.168.1.5.4";
+  serverLanIp = "192.168.1.54";
   lanDomain = "home.arpa";
   lanHost = name: "${name}.${lanDomain}";
 
@@ -25,22 +25,22 @@ let
   # Proton WireGuard settings for routing only rTorrent through the VPN.
   # Roy needs its own WireGuard config from ProtonVPN (device-specific keypair).
   # 1. Generate a new WireGuard config in the ProtonVPN dashboard for Roy.
-  # 2. Add the private key to sops as `protonvpn-wireguard-private-key`.
+  # 2. Add the private key to sops as `protonvpn-roy-wireguard-key`.
   # 3. Ensure Roy's age key is in .sops.yaml so secrets can be decrypted.
   # 4. Fill in address/peerPublicKey/endpoint below and set enable = true.
   protonVpn = {
-    enable = false;
+    enable = true;
     namespace = "protonvpn";
     interface = "wg-proton";
 
     # From Proton's [Interface] Address field, e.g. "10.2.0.2/32".
-    address = "CHANGE-ME/32";
+    address = "10.2.0.2/32";
     # From Proton's [Interface] DNS field. Proton usually uses 10.2.0.1.
     dns = "10.2.0.1";
 
     # From Proton's [Peer] fields.
-    peerPublicKey = "CHANGE-ME";
-    endpoint = "CHANGE-ME.protonvpn.net:51820";
+    peerPublicKey = "4RblBFy7/Vm2VT6SCyZJ1kKGOgdz2k+WxpNQKdw8mmc=";
+    endpoint = "45.134.140.46:51820";
     allowedIPs = [ "0.0.0.0/0" ];
 
     # Proton's NAT-PMP gateway inside the WireGuard tunnel. This is used to
@@ -412,7 +412,7 @@ in
   ];
 
   sops.secrets = lib.mkIf protonVpn.enable {
-    protonvpn-wireguard-private-key = {
+    protonvpn-roy-wireguard-key = {
       owner = "root";
       group = "root";
       mode = "0400";
@@ -425,7 +425,7 @@ in
     # which means it has no non-VPN route to leak through if WireGuard is down.
     interfaceNamespace = protonVpn.namespace;
     ips = [ protonVpn.address ];
-    privateKeyFile = config.sops.secrets.protonvpn-wireguard-private-key.path;
+    privateKeyFile = config.sops.secrets.protonvpn-roy-wireguard-key.path;
 
     preSetup = ''
       ${pkgs.iproute2}/bin/ip netns add ${protonVpn.namespace} 2>/dev/null || true
@@ -442,7 +442,6 @@ in
         endpoint = protonVpn.endpoint;
         allowedIPs = protonVpn.allowedIPs;
         persistentKeepalive = 25;
-        dynamicEndpointRefreshSeconds = 300;
       }
     ];
   };
@@ -475,10 +474,43 @@ in
       ExecStart = pkgs.writeShellScript "protonvpn-rtorrent-natpmp" ''
         set -euo pipefail
 
-        ${pkgs.iproute2}/bin/ip netns exec ${protonVpn.namespace} \
-          ${pkgs.libnatpmp}/bin/natpmpc \
-            -g ${protonVpn.natPmpGateway} \
-            -a ${toString config.services.rtorrent.port} ${toString config.services.rtorrent.port} tcp ${toString protonVpn.natPmpLifetimeSeconds}
+        # libnatpmp's natpmpc can fail in a WireGuard-only network namespace
+        # while trying to auto-detect a default gateway, even when -g is set.
+        # Send the small NAT-PMP request directly to Proton's tunnel gateway.
+        for attempt in $(seq 1 10); do
+          if ${pkgs.iproute2}/bin/ip netns exec ${protonVpn.namespace} \
+            ${pkgs.python3}/bin/python3 - <<'PY'
+import socket, struct, sys, time
+
+gateway = "${protonVpn.natPmpGateway}"
+private_port = ${toString config.services.rtorrent.port}
+public_port = ${toString config.services.rtorrent.port}
+lifetime = ${toString protonVpn.natPmpLifetimeSeconds}
+
+# NAT-PMP TCP mapping request: version, opcode, reserved, private, public, lifetime.
+request = struct.pack("!BBHHHI", 0, 2, 0, private_port, public_port, lifetime)
+with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+    sock.settimeout(5)
+    sock.sendto(request, (gateway, 5351))
+    data, _ = sock.recvfrom(16)
+
+if len(data) < 16:
+    raise SystemExit(f"short NAT-PMP response: {len(data)} bytes")
+version, opcode, result, seconds, private, public, lifetime = struct.unpack("!BBHIHHI", data)
+if version != 0 or opcode != 130:
+    raise SystemExit(f"unexpected NAT-PMP response version/opcode: {version}/{opcode}")
+if result != 0:
+    raise SystemExit(f"NAT-PMP result code {result}")
+print(f"ProtonVPN NAT-PMP mapped TCP public port {public} -> local port {private} for {lifetime}s")
+PY
+          then
+            exit 0
+          fi
+          echo "NAT-PMP renewal attempt $attempt failed; retrying..." >&2
+          sleep 3
+        done
+
+        exit 1
       '';
     };
   };
