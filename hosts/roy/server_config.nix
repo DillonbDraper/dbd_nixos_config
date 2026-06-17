@@ -110,8 +110,9 @@ in
   # localhost for now. Configure them from Roy directly at:
   #   Radarr:   http://127.0.0.1:7878
   #   Sonarr:   http://127.0.0.1:8989
-  #   Lidarr:   http://127.0.0.1:8686
-  #   Prowlarr: http://127.0.0.1:9696
+  #   Lidarr:       http://127.0.0.1:8686
+  #   Prowlarr:     http://127.0.0.1:9696
+  #   FlareSolverr: http://127.0.0.1:8191
   services.radarr = {
     enable = true;
     openFirewall = false;
@@ -165,6 +166,14 @@ in
       update.mechanism = "external";
       log.analyticsEnabled = false;
     };
+  };
+
+  # Internal-only Cloudflare challenge solver for Prowlarr indexer proxies.
+  # Configure Prowlarr to use http://127.0.0.1:8191 for affected indexers.
+  services.flaresolverr = {
+    enable = true;
+    openFirewall = false;
+    port = 8191;
   };
 
   services.rtorrent = {
