@@ -80,8 +80,12 @@ in
 
   services.jellyfin = {
     enable = true;
-    # Keep Jellyfin itself private; Caddy is the public entrypoint.
-    openFirewall = false;
+    # Open Jellyfin's own ports to the LAN so phone/TV clients can reach it
+    # directly at http://<serverLanIp>:8096 (and via LAN auto-discovery) without
+    # relying on DNS. This only exposes Jellyfin to devices already on the LAN;
+    # the router does not forward 8096 from the internet. Caddy
+    # (jellyfin.whatgrabsme.org) remains the public/remote entrypoint.
+    openFirewall = true;
     group = "media";
   };
 
