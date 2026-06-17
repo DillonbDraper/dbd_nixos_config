@@ -401,6 +401,29 @@ in
   networking.firewall.allowedTCPPorts = [ 80 443 53 ];
   networking.firewall.allowedUDPPorts = [ 53 ];
 
+  # Secondary LAN IP alias. Some routers require the DHCP primary/secondary DNS
+  # to be two *different* addresses and won't accept a blank secondary. Giving
+  # Roy a second address lets the router list `serverLanIp` as primary and this
+  # alias as secondary, so both resolvers are still Roy's dnsmasq and home.arpa
+  # names resolve no matter which one a client picks. dnsmasq doesn't bind to a
+  # single address, so it answers on this alias with no extra config.
+  # NOTE: keep secondaryLanIp outside the router's DHCP pool to avoid conflicts.
+  systemd.services.lan-dns-alias = let
+    secondaryLanIp = "192.168.1.55";
+    lanInterface = "wlp0s20f3";
+  in {
+    description = "Secondary LAN IP alias so the router can point a distinct secondary DNS at Roy";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.iproute2}/bin/ip addr replace ${secondaryLanIp}/24 dev ${lanInterface}";
+      ExecStop = "${pkgs.iproute2}/bin/ip addr del ${secondaryLanIp}/24 dev ${lanInterface}";
+    };
+  };
+
   assertions = [
     {
       assertion = serverLanIp != "CHANGE-ME";
