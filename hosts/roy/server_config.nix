@@ -55,8 +55,9 @@ let
     # tiny /30 is routed over the veth; the namespace's default route remains the
     # WireGuard interface, so all Soulseek traffic still egresses through the VPN.
     veth = {
-      host = "veth-proton-host";
-      ns = "veth-proton-ns";
+      # Interface names must be <= 15 characters (IFNAMSIZ), so keep these short.
+      host = "vproton-host";
+      ns = "vproton-ns";
       hostAddr = "10.200.0.1";
       nsAddr = "10.200.0.2";
       prefixLength = 30;
