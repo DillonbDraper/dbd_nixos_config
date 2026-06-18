@@ -6,6 +6,11 @@
 let
   mediaRoot = "/svr/newDrive/media";
 
+  # Pin the media group's gid to its current value on Roy so the soularr
+  # container can join it by number (a container can't resolve host group names).
+  # This equals the existing auto-assigned gid, so no files get re-chowned.
+  mediaGid = 982;
+
   # Roy's reserved DHCP/static LAN address. Change this before building.
   serverLanIp = "192.168.1.54";
   lanDomain = "home.arpa";
@@ -85,7 +90,7 @@ let
   seerrHost = "seerr.whatgrabsme.org";
 in
 {
-  users.groups.media = { };
+  users.groups.media = { gid = mediaGid; };
 
   users.users.dillon.extraGroups = [ "media" ];
 
@@ -132,7 +137,7 @@ in
     settings = {
       Address = "0.0.0.0";
       Port = 4533;
-      MusicFolder = "${mediaRoot}/library/music";
+      MusicFolder = "${mediaRoot}/music";
       DataFolder = "/var/lib/navidrome";
       EnableInsightsCollector = false;
     };
@@ -250,12 +255,24 @@ in
   # --network=host lets it reach Lidarr (127.0.0.1:8686) and slskd (veth) at
   # once. The slskd download dir is mounted at an identical path so the paths
   # soularr hands to Lidarr for import line up on both sides.
+  #
+  # Run as root:media with a group-writable umask. soularr builds the import
+  # folders it hands to Lidarr; as bare root those came out root:root, so Lidarr
+  # (which runs as group media) could copy the tracks to the library but then
+  # could not delete the source during its move-import -> UnauthorizedAccess.
+  # Keeping uid 0 lets soularr still read the root-owned config and write /data;
+  # gid media + umask 0002 makes everything it creates group-writable so Lidarr
+  # can import and clean up.
   virtualisation.oci-containers = {
     backend = "podman";
     containers.soularr = {
       image = "mrusse08/soularr:latest";
       autoStart = true;
-      extraOptions = [ "--network=host" ];
+      extraOptions = [
+        "--network=host"
+        "--user=0:${toString mediaGid}"
+        "--umask=0002"
+      ];
       environment = {
         SCRIPT_INTERVAL = "300";
         TZ = "America/Chicago";
@@ -570,7 +587,7 @@ in
     remote_queue_timeout = 300
 
     [Release Settings]
-    use_selected_lidarr_release = False
+    use_selected_lidarr_release = True
     use_most_common_tracknum = True
     allow_multi_disc = True
     accepted_countries = Europe,Japan,United Kingdom,United States,[Worldwide],Australia,Canada
@@ -591,7 +608,7 @@ in
     title_blacklist =
     search_blacklist =
     search_source = missing
-    failed_import_denylist = True
+    failed_import_denylist = False
 
     [Download Settings]
     download_filtering = True

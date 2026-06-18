@@ -49,10 +49,10 @@
     # Music/video players
     mpv
     deno
-    tauon
     mpvScripts.mpris
     mpvScripts.uosc
     mpvScripts.sponsorblock-minimal
+    supersonic-wayland
 
     # editors
     kakoune
