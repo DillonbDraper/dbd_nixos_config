@@ -4,7 +4,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  mediaRoot = "/svr/newDrive";
+  mediaRoot = "/svr/newDrive/media";
 
   # Roy's reserved DHCP/static LAN address. Change this before building.
   serverLanIp = "192.168.1.54";
@@ -48,11 +48,33 @@ let
     natPmpGateway = "10.2.0.1";
     natPmpLifetimeSeconds = 60;
     natPmpRenewSeconds = 45;
+
+    # veth pair bridging the host namespace and the protonvpn namespace so
+    # services in the host ns (Caddy, the soularr container) can reach slskd's
+    # web API while slskd itself stays confined to the VPN namespace. Only this
+    # tiny /30 is routed over the veth; the namespace's default route remains the
+    # WireGuard interface, so all Soulseek traffic still egresses through the VPN.
+    veth = {
+      host = "veth-proton-host";
+      ns = "veth-proton-ns";
+      hostAddr = "10.200.0.1";
+      nsAddr = "10.200.0.2";
+      prefixLength = 30;
+    };
   };
 
   protonResolvConf = pkgs.writeText "protonvpn-resolv.conf" ''
     nameserver ${protonVpn.dns}
   '';
+
+  # slskd runs inside the protonvpn namespace; its web/API is reached from the
+  # host (and proxied by Caddy / consumed by soularr) over the veth address.
+  slskdPort = 5030;
+  slskdApiUrl = "http://${protonVpn.veth.nsAddr}:${toString slskdPort}";
+  slskdDownloadDir = "${mediaRoot}/soulseek/complete";
+  slskdIncompleteDir = "${mediaRoot}/soulseek/incomplete";
+
+  lidarrApiUrl = "http://127.0.0.1:8686";
 
   # Local HTTP hostnames for initial testing. Replace these with real domains
   # later, e.g. "jellyfin.example.com" and "music.example.com". Removing the
@@ -76,6 +98,10 @@ in
     "d ${mediaRoot}/torrents/complete 0775 rtorrent media - -"
     "d ${mediaRoot}/torrents/incomplete 0775 rtorrent media - -"
     "d ${mediaRoot}/appdata 0775 dillon media - -"
+    # slskd (Soulseek) downloads, owned so Lidarr can import via the media group.
+    "d ${mediaRoot}/soulseek 0775 slskd media - -"
+    "d ${slskdDownloadDir} 0775 slskd media - -"
+    "d ${slskdIncompleteDir} 0775 slskd media - -"
   ];
 
   services.jellyfin = {
@@ -186,6 +212,55 @@ in
     enable = true;
     openFirewall = false;
     port = 8191;
+  };
+
+  # slskd: Soulseek daemon driven by soularr. Runs inside the protonvpn network
+  # namespace (see the systemd override below) so all Soulseek traffic egresses
+  # through the VPN. Its web/API is reached from the host over the veth at
+  # ${slskdApiUrl}. Soulseek credentials, the web-UI login, and the soularr API
+  # key are supplied via the sops-rendered environment file (never the nix
+  # store). slskd has no inbound port-forward (ProtonVPN's single NAT-PMP forward
+  # is already used by rTorrent), so it operates in passive mode.
+  services.slskd = {
+    enable = true;
+    openFirewall = false;
+    group = "media";
+    domain = null;
+    environmentFile = config.sops.templates."slskd.env".path;
+    settings = {
+      soulseek.listen_port = 50300;
+      directories = {
+        downloads = slskdDownloadDir;
+        incomplete = slskdIncompleteDir;
+      };
+      # Share the music library back to Soulseek (good etiquette; many peers
+      # refuse to upload to non-sharing users). Traffic goes through the VPN.
+      shares.directories = [ "${mediaRoot}/library/music" ];
+      shares.filters = [ ];
+      web.port = slskdPort;
+    };
+  };
+
+  # soularr: bridges Lidarr's wanted list to slskd and triggers Lidarr import.
+  # Runs as a Podman container (its slskd-api Python dep is not in nixpkgs).
+  # --network=host lets it reach Lidarr (127.0.0.1:8686) and slskd (veth) at
+  # once. The slskd download dir is mounted at an identical path so the paths
+  # soularr hands to Lidarr for import line up on both sides.
+  virtualisation.oci-containers = {
+    backend = "podman";
+    containers.soularr = {
+      image = "mrusse08/soularr:latest";
+      autoStart = true;
+      extraOptions = [ "--network=host" ];
+      environment = {
+        SCRIPT_INTERVAL = "300";
+        TZ = "America/Chicago";
+      };
+      volumes = [
+        "${config.sops.templates."soularr-config.ini".path}:/data/config.ini:ro"
+        "${slskdDownloadDir}:${slskdDownloadDir}"
+      ];
+    };
   };
 
   services.rtorrent = {
@@ -372,6 +447,7 @@ in
     virtualHosts."http://${lanHost "lidarr"}".extraConfig = localOnlyReverseProxy "127.0.0.1:8686";
     virtualHosts."http://${lanHost "prowlarr"}".extraConfig = localOnlyReverseProxy "127.0.0.1:9696";
     virtualHosts."http://${lanHost "rutorrent"}".extraConfig = localOnlyReverseProxy "127.0.0.1:8081";
+    virtualHosts."http://${lanHost "slskd"}".extraConfig = localOnlyReverseProxy "${protonVpn.veth.nsAddr}:${toString slskdPort}";
   };
 
   # Lightweight local DNS for friendly LAN names and split-DNS for the public
@@ -399,6 +475,7 @@ in
         "/${lanHost "lidarr"}/${serverLanIp}"
         "/${lanHost "prowlarr"}/${serverLanIp}"
         "/${lanHost "rutorrent"}/${serverLanIp}"
+        "/${lanHost "slskd"}/${serverLanIp}"
         "/${lanHost "roy"}/${serverLanIp}"
 
         # Split-DNS for public hostnames avoids router hairpin/NAT-loopback
@@ -432,13 +509,100 @@ in
     }
   ];
 
-  sops.secrets = lib.mkIf protonVpn.enable {
-    protonvpn-roy-wireguard-key = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-    };
-  };
+  # Secrets for slskd + soularr. Populate these in secrets/secrets.yaml with
+  # `sops secrets/secrets.yaml` before switching:
+  #   slskd-soulseek-username/password : your Soulseek (Nicotine) account
+  #   slskd-web-username/password       : login for the slskd web UI
+  #   slskd-api-key                     : `openssl rand -hex 32`, shared with soularr
+  #   lidarr-api-key                    : from Lidarr > Settings > General (after it runs)
+  sops.secrets = lib.mkMerge [
+    (lib.mkIf protonVpn.enable {
+      protonvpn-roy-wireguard-key = {
+        owner = "root";
+        group = "root";
+        mode = "0400";
+      };
+    })
+    {
+      slskd-soulseek-username = { };
+      slskd-soulseek-password = { };
+      slskd-web-username = { };
+      slskd-web-password = { };
+      slskd-api-key = { };
+      lidarr-api-key = { };
+    }
+  ];
+
+  # Environment file for slskd (read by systemd as root, never in the nix store).
+  # slskd maps SLSKD_-prefixed vars onto its config; a single primary API key is
+  # set with the `role=...;cidr=...;<key>` form. Administrator role lets soularr
+  # queue downloads and import.
+  sops.templates."slskd.env".content = ''
+    SLSKD_SLSK_USERNAME=${config.sops.placeholder."slskd-soulseek-username"}
+    SLSKD_SLSK_PASSWORD=${config.sops.placeholder."slskd-soulseek-password"}
+    SLSKD_USERNAME=${config.sops.placeholder."slskd-web-username"}
+    SLSKD_PASSWORD=${config.sops.placeholder."slskd-web-password"}
+    SLSKD_API_KEY=role=Administrator;cidr=0.0.0.0/0,::/0;${config.sops.placeholder."slskd-api-key"}
+  '';
+
+  # soularr's config.ini, rendered with the Lidarr + slskd API keys. Connection
+  # hosts/dirs are wired to this deployment; the remaining tunables are soularr's
+  # documented defaults. download_dir is identical on both sides because the
+  # slskd downloads path is bind-mounted into the container unchanged.
+  sops.templates."soularr-config.ini".content = ''
+    [Lidarr]
+    api_key = ${config.sops.placeholder."lidarr-api-key"}
+    host_url = ${lidarrApiUrl}
+    download_dir = ${slskdDownloadDir}
+    disable_sync = False
+
+    [Slskd]
+    api_key = ${config.sops.placeholder."slskd-api-key"}
+    host_url = ${slskdApiUrl}
+    url_base = /
+    download_dir = ${slskdDownloadDir}
+    delete_searches = False
+    stalled_timeout = 3600
+    remote_queue_timeout = 300
+
+    [Release Settings]
+    use_selected_lidarr_release = False
+    use_most_common_tracknum = True
+    allow_multi_disc = True
+    accepted_countries = Europe,Japan,United Kingdom,United States,[Worldwide],Australia,Canada
+    skip_region_check = False
+    accepted_formats = CD,Digital Media,Vinyl
+
+    [Search Settings]
+    search_timeout = 5000
+    maximum_peer_queue = 50
+    minimum_peer_upload_speed = 0
+    minimum_filename_match_ratio = 0.8
+    minimum_search_interval = 5
+    allowed_filetypes = flac 24/192,flac 16/44.1,flac,mp3 320,mp3
+    ignored_users =
+    album_prepend_artist = False
+    search_type = incrementing_page
+    number_of_albums_to_grab = 10
+    title_blacklist =
+    search_blacklist =
+    search_source = missing
+    failed_import_denylist = True
+
+    [Download Settings]
+    download_filtering = True
+    use_extension_whitelist = False
+    extensions_whitelist = lrc,nfo,txt
+
+    [Logging]
+    level = INFO
+    format = [%(levelname)s|%(module)s|L%(lineno)d] %(asctime)s: %(message)s
+    datefmt = %Y-%m-%dT%H:%M:%S%z
+    log_to_file = False
+    log_file = soularr.log
+    max_bytes = 1048576
+    backup_count = 3
+  '';
 
   networking.wireguard.interfaces.${protonVpn.interface} = lib.mkIf protonVpn.enable {
     # Create the WireGuard socket in the host namespace, then move the
@@ -451,9 +615,21 @@ in
     preSetup = ''
       ${pkgs.iproute2}/bin/ip netns add ${protonVpn.namespace} 2>/dev/null || true
       ${pkgs.iproute2}/bin/ip -n ${protonVpn.namespace} link set lo up
+
+      # veth pair so the host can reach slskd's web/API inside the namespace.
+      # The namespace keeps its WireGuard default route, so only this /30 is
+      # local; all other traffic (Soulseek) still goes through the VPN.
+      ${pkgs.iproute2}/bin/ip link del ${protonVpn.veth.host} 2>/dev/null || true
+      ${pkgs.iproute2}/bin/ip link add ${protonVpn.veth.host} type veth peer name ${protonVpn.veth.ns}
+      ${pkgs.iproute2}/bin/ip link set ${protonVpn.veth.ns} netns ${protonVpn.namespace}
+      ${pkgs.iproute2}/bin/ip addr add ${protonVpn.veth.hostAddr}/${toString protonVpn.veth.prefixLength} dev ${protonVpn.veth.host}
+      ${pkgs.iproute2}/bin/ip link set ${protonVpn.veth.host} up
+      ${pkgs.iproute2}/bin/ip -n ${protonVpn.namespace} addr add ${protonVpn.veth.nsAddr}/${toString protonVpn.veth.prefixLength} dev ${protonVpn.veth.ns}
+      ${pkgs.iproute2}/bin/ip -n ${protonVpn.namespace} link set ${protonVpn.veth.ns} up
     '';
 
     postShutdown = ''
+      ${pkgs.iproute2}/bin/ip link del ${protonVpn.veth.host} 2>/dev/null || true
       ${pkgs.iproute2}/bin/ip netns delete ${protonVpn.namespace} 2>/dev/null || true
     '';
 
@@ -478,6 +654,22 @@ in
       # point at a LAN resolver or systemd-resolved stub that is unreachable from
       # this namespace, so bind Proton's VPN DNS just for this service.
       BindReadOnlyPaths = [ "${protonResolvConf}:/etc/resolv.conf" ];
+    };
+  };
+
+  # Confine slskd to the same ProtonVPN namespace as rTorrent. It binds all
+  # interfaces inside the namespace, so the host reaches its web/API over the
+  # veth at ${slskdApiUrl}, while Soulseek traffic egresses through the VPN.
+  systemd.services.slskd = lib.mkIf protonVpn.enable {
+    requires = [ "wireguard-${protonVpn.interface}.target" ];
+    after = [ "wireguard-${protonVpn.interface}.target" ];
+    bindsTo = [ "wireguard-${protonVpn.interface}.target" ];
+
+    serviceConfig = {
+      NetworkNamespacePath = "/run/netns/${protonVpn.namespace}";
+      BindReadOnlyPaths = [ "${protonResolvConf}:/etc/resolv.conf" ];
+      # Make completed downloads group-writable so Lidarr can import them.
+      UMask = "0002";
     };
   };
 
