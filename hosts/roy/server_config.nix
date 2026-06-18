@@ -99,10 +99,13 @@ in
     "d ${mediaRoot}/torrents/complete 0775 rtorrent media - -"
     "d ${mediaRoot}/torrents/incomplete 0775 rtorrent media - -"
     "d ${mediaRoot}/appdata 0775 dillon media - -"
-    # slskd (Soulseek) downloads, owned so Lidarr can import via the media group.
-    "d ${mediaRoot}/soulseek 0775 slskd media - -"
-    "d ${slskdDownloadDir} 0775 slskd media - -"
-    "d ${slskdIncompleteDir} 0775 slskd media - -"
+    # slskd (Soulseek) downloads. Owned by dillon:media like the other media
+    # dirs (not slskd) so systemd-tmpfiles doesn't reject creation with an
+    # "unsafe path transition" — a non-root owner change mid-path. slskd writes
+    # here as a member of the media group (mode 0775), same as rtorrent.
+    "d ${mediaRoot}/soulseek 0775 dillon media - -"
+    "d ${slskdDownloadDir} 0775 dillon media - -"
+    "d ${slskdIncompleteDir} 0775 dillon media - -"
   ];
 
   services.jellyfin = {
