@@ -44,7 +44,6 @@
     gamemode
     libnotify
     input-integrity-lossless
-    dorion # alt Discord client
 
     # Music/video players
     mpv
@@ -53,6 +52,7 @@
     mpvScripts.uosc
     mpvScripts.sponsorblock-minimal
     supersonic-wayland
+    feishin
 
     # editors
     kakoune

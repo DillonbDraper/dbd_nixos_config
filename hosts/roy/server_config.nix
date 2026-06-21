@@ -601,7 +601,7 @@ in
     minimum_filename_match_ratio = 0.8
     minimum_search_interval = 5
     allowed_filetypes = flac 24/192,flac 16/44.1,flac,mp3 320,mp3
-    ignored_users =
+    ignored_users = abyde-
     album_prepend_artist = False
     search_type = incrementing_page
     number_of_albums_to_grab = 10
