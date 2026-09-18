@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, lib, ... }:
 
 {
   # Note: hardware-configuration.nix and networking.hostName are now set in host-specific configs
@@ -38,6 +38,7 @@
   services.displayManager.sddm.enable = true;
   services.displayManager.sddm.wayland.enable = false; # kwin_wayland fights niri for DRM master; use X11 greeter instead
   services.desktopManager.plasma6.enable = true;
+  services.displayManager.defaultSession = lib.mkForce "niri"; # both plasma6.nix and niri.nix set this now; niri is the primary session
   services.tailscale.enable = true;
 
   networking.firewall.allowedTCPPorts = [19999];
@@ -191,6 +192,17 @@
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Binary caches for rolling-release flake inputs (niri-unstable, noctalia/quickshell)
+  # so flake updates fetch pre-built binaries instead of compiling from source.
+  nix.settings.substituters = [
+    "https://niri.cachix.org"
+    "https://noctalia.cachix.org"
+  ];
+  nix.settings.trusted-public-keys = [
+    "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
+    "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+  ];
+
   # Enable firmware for Bluetooth and other hardware
   hardware.enableRedistributableFirmware = true;
 
@@ -259,10 +271,6 @@ environment.variables = {
   __GL_SYNC_TO_VBLANK = "0";
 };
 
-environment.sessionVariables = {
-  EDITOR = "emacs";
-};
-
   # Strangley required for input fonts
  nixpkgs.config.input-fonts.acceptLicense = true;
 
@@ -283,7 +291,6 @@ environment.sessionVariables = {
     gnumake
     libtool
     gcc
-    emacs-pgtk
     libtool
     jellyfin
     jellyfin-web

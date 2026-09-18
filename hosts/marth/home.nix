@@ -19,6 +19,7 @@
     codex
     opencode
     claude-code
+    whisper-cpp
 
     # nix related
     nix-output-monitor
@@ -27,16 +28,13 @@
     qbittorrent
 
     # vpn/work suite
-    mattermost-desktop
+    inputs.nixpkgs-mattermost.legacyPackages.${pkgs.stdenv.hostPlatform.system}.mattermost-desktop
 
     # Terminal emulators
     alacritty
     ghostty
     foot
     vtebench
-    rio
-    xfce4-terminal
-    st
 
     # gaming
     runelite
@@ -44,6 +42,7 @@
     gamemode
     libnotify
     input-integrity-lossless
+    solaar # logitech mouse software
 
     # Music/video players
     mpv
@@ -51,11 +50,17 @@
     mpvScripts.mpris
     mpvScripts.uosc
     mpvScripts.sponsorblock-minimal
-    supersonic-wayland
     feishin
 
     # editors
     kakoune
+
+    # extra browsers:
+    brave
+    google-chrome
+
+    # TURN server
+    coturn
   ];
 
   programs.zsh.shellAliases = {
@@ -77,6 +82,36 @@
         refresh = 144.001;
       };
       focus-at-startup = true;
+    };
+  };
+
+  programs.retroarch.enable = true;
+  programs.retroarch.cores = {
+    mgba.enable = true;
+    bsnes = {
+      enable = true;
+      package = pkgs.libretro.bsnes-hd;
+    };
+  };
+
+  # Solaar only pushes its saved settings (DPI stages, gestures, scroll
+  # behavior, etc.) to the device while it is running and sees the
+  # connect/pairing event -- most of these settings aren't stored on the
+  # receiver/mouse firmware. Run it hidden in the background persistently
+  # instead of launching it on demand, so settings survive sleep/wake,
+  # receiver replugs, and reboots.
+  systemd.user.services.solaar = {
+    Unit = {
+      Description = "Solaar Logitech device manager (background, hidden window)";
+      After = [ "graphical-session-pre.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.solaar}/bin/solaar --window=hide --restart-on-wake-up";
+      Restart = "on-failure";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
     };
   };
 }

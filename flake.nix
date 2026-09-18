@@ -4,9 +4,10 @@
   inputs = {
     # NixOS official package source, using the nixos-unstable branch
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-mattermost.url = "github:NixOS/nixpkgs/nixos-unstable";
     expert = {
       url = "github:elixir-lang/expert";
-      inputs.nixpkgs.follows = "nixpkgs";
+      flake = false;
     };
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
@@ -61,6 +62,13 @@
           inherit system;
           pkgs = nixpkgs.legacyPackages.${system};
         });
+    mkExpert = pkgs:
+      let
+        beamPackages = pkgs.beamMinimal27Packages.overrideScope (_: prev: {
+          elixir = prev.elixir_1_17;
+        });
+      in
+      pkgs.callPackage "${expert}/nix/expert.nix" { inherit beamPackages; };
   in {
     # Custom packages overlay
     overlays.default = final: prev: {
@@ -69,6 +77,8 @@
       devicon-lookup = final.callPackage ./my_derivations/devicon_lookup/default.nix { };
       pi-coding-agent-custom = final.callPackage ./my_derivations/pi_coding_agent/default.nix { };
       droid = final.callPackage ./my_derivations/droid/default.nix { buildFHSEnv = final.buildFHSEnv; };
+      simba = final.callPackage ./my_derivations/simba/default.nix { };
+      expert-lsp = mkExpert final;
     };
 
 
@@ -81,7 +91,7 @@
         packages = with pkgs; [
           elixir_1_18
           erlang
-          expert.packages.${system}.default
+          (mkExpert pkgs)
         ];
       };
     });

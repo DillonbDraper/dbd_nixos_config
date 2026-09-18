@@ -18,6 +18,39 @@
 
   systemd.user.startServices = "sd-switch";
 
+  programs.emacs = {                  
+    enable = true;      
+    package = pkgs.emacs-pgtk;
+  };
+  
+  services.emacs = {                  
+    enable = true;
+    
+    # Start when your graphical user session starts. 
+    startWithUserSession = "graphical";
+    
+    # Generate an "Emacs Client" desktop entry.                      
+    client = {                
+      enable = true;         
+      arguments = [ "-c" ];
+    };
+    # Sets EDITOR/VISUAL to an emacsclient wrapper
+    defaultEditor = true;
+  };
+
+  # The daemon otherwise inherits TERM="" and every magit commit dies with
+  # "there was a problem with the editor".  niri-session re-execs through a
+  # login zsh, where /etc/set-environment's `export TERM=$TERM` turns an unset
+  # TERM into an exported empty string (zsh, unlike bash, does not default it
+  # to "dumb"), and then runs `systemctl --user import-environment` with no
+  # argument list, so TERM="" lands in the systemd user manager.  With an empty
+  # TERM emacsclient sends "-tty <pts> <empty>"; `server-process-filter' splits
+  # the request with omit-nulls, so "-file" is eaten as the terminal type and
+  # the leftover COMMIT_EDITMSG path is rejected as "Unknown command".
+  systemd.user.services.emacs.Service.Environment = [ "TERM=dumb" ];
+
+
+  
   sops = {
     defaultSopsFile = ../secrets/secrets.yaml;
     defaultSopsFormat = "yaml";
@@ -32,58 +65,32 @@
     };
   };
 
-  # ALSA configuration for PipeWire
+  # ALSA configuration for PipeWire.
+  # Keep ALSA-only applications on PipeWire instead of falling back to raw
+  # hardware devices, which can make apps like RuneLite grab the USB DAC
+  # exclusively and prevent PipeWire from seeing/using it.
   home.file.".asoundrc".text = ''
     pcm.!default {
-      type pulse
-      fallback "sysdefault"
+      type pipewire
+      playback_node "-1"
+      capture_node "-1"
       hint {
         show on
-        description "Default ALSA Output (via PulseAudio/PipeWire)"
+        description "Default ALSA Output (via PipeWire)"
       }
     }
     ctl.!default {
-      type pulse
-      fallback "sysdefault"
+      type pipewire
     }
   '';
 
-  # WirePlumber configuration to set device priorities
-  # Built-in audio has high priority, but Bluetooth can override when connected
-  xdg.configFile."wireplumber/main.lua.d/51-default-device.lua".text = ''
-    -- Built-in audio gets priority, but not so high that Bluetooth can't override
-    alsa_rule = {
-      matches = {
-        {
-          { "node.name", "equals", "alsa_output.pci-0000_00_1f.3.analog-stereo" },
-        },
-      },
-      apply_properties = {
-        ["node.priority"] = 900,
-      },
-    }
-    table.insert(alsa_monitor.rules, alsa_rule)
-
-    -- Bluetooth devices get higher priority when connected
-    bluetooth_rule = {
-      matches = {
-        {
-          { "node.name", "matches", "bluez*" },
-        },
-      },
-      apply_properties = {
-        ["node.priority"] = 1000,
-      },
-    }
-    table.insert(bluez_monitor.rules, bluetooth_rule)
-  '';
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     docker
 
     inputs.niri.packages.${pkgs.system}.xwayland-satellite-unstable
-    (pkgs.lib.hiPrio inputs.expert.packages.${pkgs.system}.default)
+    (pkgs.lib.hiPrio pkgs.expert-lsp)
     fastfetch
 
     # archives
