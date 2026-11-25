@@ -18,6 +18,12 @@
 # });
 
  networking.hostName = "marth";
+ networking.hosts = {
+   "192.168.1.54" = [
+     "turn.whatgrabsme.org"
+     "turn.whatgrabsme.org."
+   ];
+ };
 
   # Replace SDDM on Marth only. The shared configuration still enables SDDM
   # for Roy, so this must override that shared value.
