@@ -5,6 +5,8 @@
     # NixOS official package source, using the nixos-unstable branch
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-mattermost.url = "github:NixOS/nixpkgs/nixos-unstable";
+    rex.url = "https://pkgs.superlogical.com/rex/nix/snapshot.tar.gz";
+    rex-rune.url = "github:shuv1337/rex-rune";
     expert = {
       url = "github:elixir-lang/expert";
       flake = false;
@@ -29,6 +31,11 @@
     claude-code = {
     url = "github:sadjow/claude-code-nix" ;
     inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     
     niri = {
@@ -75,9 +82,8 @@
       input-integrity-lossless = final.callPackage ./my_derivations/input_integrity_lossless/default.nix { };
       cursor-agent-acp-npm = final.callPackage ./my_derivations/cursor_acp_bridge/default.nix {  };
       devicon-lookup = final.callPackage ./my_derivations/devicon_lookup/default.nix { };
-      pi-coding-agent-custom = final.callPackage ./my_derivations/pi_coding_agent/default.nix { };
-      droid = final.callPackage ./my_derivations/droid/default.nix { buildFHSEnv = final.buildFHSEnv; };
-      simba = final.callPackage ./my_derivations/simba/default.nix { };
+      dreamcoder = final.callPackage ./my_derivations/dreamcoder/default.nix { };
+      # Keep pkgs.orca and the `orca` command for the screen reader.
       expert-lsp = mkExpert final;
     };
 

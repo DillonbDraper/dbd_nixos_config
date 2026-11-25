@@ -25,6 +25,7 @@
   services.displayManager.noctalia-greeter = {
     enable = true;
 
+    passwordlessSyncUsers = ["dillon"];
     settings = {
       session.default = "niri";
       user.default = "dillon";
@@ -32,14 +33,18 @@
     };
   };
 
+  # Add Umbriel as another greeter session while keeping Niri as the default.
+  # The nixpkgs module also registers Umbriel's screencast portal.
+  programs.umbriel.enable = true;
+
+  # Local container builds and smoke tests on Marth.
+  virtualisation.docker.enable = true;
+
+  # Docker socket access is effectively root-equivalent.
+  users.users.dillon.extraGroups = [ "docker" ];
+
   # Installs the Logitech HID++ udev rules so Solaar (installed via
   # home-manager) can open the Unifying receiver's /dev/hidraw node,
   # which is otherwise root:root 0600.
   hardware.logitech.wireless.enable = true;
-
-  # Allow Simba's RemoteInput to attach to the (same-user) RuneLite client
-  # without needing cap_sys_ptrace on the binary. This is the declarative
-  # equivalent of the upstream `setcap cap_sys_ptrace=eip` step. ptrace_scope=0
-  # lets any same-uid process ptrace another (classic permissive behaviour).
-  boot.kernel.sysctl."kernel.yama.ptrace_scope" = 0;
 }

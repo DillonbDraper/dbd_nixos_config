@@ -88,6 +88,8 @@
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     docker
+    gh
+    slack
 
     inputs.niri.packages.${pkgs.system}.xwayland-satellite-unstable
     (pkgs.lib.hiPrio pkgs.expert-lsp)
@@ -109,6 +111,8 @@
     jq # A lightweight and flexible command-line JSON processor
     cloc # code loc/types of code checker
     difftastic # syntax aware diff tool
+    qemu # Open source VM creator/hypervisor
+    libvirt # VM management
 
     # misc
     file
@@ -122,8 +126,7 @@
     alegreya
 
     # LLM CLI Tooling
-    # codex-acp 
-    pi-coding-agent-custom
+    herdr # terminal agent multiplexer
 
     # nix related
     # it provides the command `nom` works just like `nix`
@@ -168,6 +171,9 @@
     just
     zig
 
+    # Elixir LSP option
+    dexter
+
     # secrets-management
     sops
 
@@ -184,8 +190,6 @@
      (aspellWithDicts (dicts: with dicts; [
       fr
       en
-      en-computers
-      en-science
     ]))
     (pkgs.emacsPackages.treesit-grammars.with-grammars (p: with p; [
       tree-sitter-bash
@@ -211,6 +215,8 @@
     typescript
     nil
     tree-sitter
+
+    flyctl
 
     #FOSS slsk client
     nicotine-plus

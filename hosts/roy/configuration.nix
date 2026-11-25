@@ -5,6 +5,7 @@
   imports = [
     ./hardware-configuration.nix
     ./server_config.nix
+    ./conference_turn.nix
     inputs.sops-nix.nixosModules.sops
   ];
 

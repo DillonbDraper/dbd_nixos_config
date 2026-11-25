@@ -1,0 +1,6 @@
+diff --git a/src/compositors/umbriel/umbriel_runtime.cpp b/src/compositors/umbriel/umbriel_runtime.cpp
+--- a/src/compositors/umbriel/umbriel_runtime.cpp
++++ b/src/compositors/umbriel/umbriel_runtime.cpp
+@@ -29 +29 @@
+-        R"({"cmd":"subscribe","events":["windows","overview","keyboard_layout","workspaces","outputs"]})";
++        R"({"cmd":"subscribe","events":["windows","overview","keyboard_layout","workspaces"]})";
