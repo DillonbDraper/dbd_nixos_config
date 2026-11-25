@@ -192,6 +192,7 @@ in
   };
 
   environment.systemPackages = [
+    pkgs.tcpdump
     (pkgs.writeShellApplication {
       name = "conference-turn-test-credentials";
       runtimeInputs = [ pkgs.python3 pkgs.sops ];
